@@ -17,11 +17,11 @@ export default function SurgicalChecklistPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-700 text-white px-6 py-3 rounded-t-xl">
+      <div className="bg-gray-700 dark:bg-slate-700 text-white px-6 py-3 rounded-t-xl">
         <h2 className="text-lg font-semibold">WHO SURGICAL SAFETY CHECKLIST</h2>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
@@ -37,7 +37,7 @@ export default function SurgicalChecklistPage() {
               className={`px-6 py-3 rounded-lg text-sm font-medium transition-colors ${
                 activePhase === phase.key
                   ? `${phase.color} text-white`
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600'
               }`}
             >
               {phase.label}
@@ -67,7 +67,7 @@ export default function SurgicalChecklistPage() {
             <ChecklistItem label="Confirm the patient's name, procedure, and where the incision will be made" />
             <ChecklistItem label="Has antibiotic prophylaxis been given within the last 60 minutes?" />
             <div className="border-t pt-4">
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">Anticipated Critical Events</h4>
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Anticipated Critical Events</h4>
               <ChecklistItem label="Surgeon: What are the critical or non-routine steps?" />
               <ChecklistItem label="Surgeon: How long will the case take?" />
               <ChecklistItem label="Surgeon: What is the anticipated blood loss?" />
@@ -104,16 +104,16 @@ export default function SurgicalChecklistPage() {
 function ChecklistItem({ label }: { label: string }) {
   const [checked, setChecked] = useState(false)
   return (
-    <label className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+    <label className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
       <div
         onClick={() => setChecked(!checked)}
         className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
-          checked ? 'bg-green-500 border-green-500' : 'border-gray-300'
+          checked ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-slate-600'
         }`}
       >
         {checked && <Check className="w-4 h-4 text-white" />}
       </div>
-      <span className={`text-sm ${checked ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{label}</span>
+      <span className={`text-sm ${checked ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-300'}`}>{label}</span>
     </label>
   )
 }

@@ -1,13 +1,23 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { findAdmission, findPatient, getNotesForAdmission, getHandoversForAdmission, findUser } from '@/lib/sample-data'
-import { FileText, Clock } from 'lucide-react'
+import { getUserFavourites } from '@/lib/store'
+import { FileText, Clock, Star } from 'lucide-react'
 
 export default function PatientOverviewPage() {
   const params = useParams()
   const admissionId = params.admissionId as string
   const admission = findAdmission(admissionId)
+  const [userFavourites, setUserFavourites] = useState<Array<{ id: string; name: string; operationNotes: string; defaultLocation: string }>>([])
+
+  useEffect(() => {
+    const uid = document.cookie.split('; ').find(c => c.startsWith('userId='))?.split('=')[1] || '1'
+    setUserFavourites(getUserFavourites(uid))
+  }, [])
+
   if (!admission) return <div>Not found</div>
 
   const patient = findPatient(admission.patientId)
@@ -26,6 +36,30 @@ export default function PatientOverviewPage() {
 
   return (
     <div className="space-y-6">
+      {/* Quick Operations */}
+      {userFavourites.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-600 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              Quick Operations
+            </h3>
+            <Link href={`/patients/${admissionId}/favourites`} className="text-xs text-cyan-600 hover:text-cyan-700">Manage Favourites</Link>
+          </div>
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {userFavourites.slice(0, 6).map(fav => (
+              <div key={fav.id} className="p-3 border border-gray-200 dark:border-slate-600 rounded-lg hover:border-yellow-400 dark:hover:border-yellow-600 cursor-pointer transition-colors">
+                <div className="flex items-center gap-2 mb-1">
+                  <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{fav.name}</span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{fav.operationNotes}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Reports */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-100">

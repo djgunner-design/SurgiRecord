@@ -143,3 +143,22 @@ export function getAuditLog(admissionId?: string) {
   if (admissionId) return store.auditLog.filter(e => e.admissionId === admissionId)
   return store.auditLog
 }
+
+// Operation Favourites (per-user)
+export function getUserFavourites(userId: string): Array<{ id: string; name: string; operationNotes: string; defaultLocation: string }> {
+  if (typeof window === 'undefined') return []
+  const key = `surgirecord_favourites_${userId}`
+  const data = localStorage.getItem(key)
+  return data ? JSON.parse(data) : []
+}
+
+export function addUserFavourite(userId: string, favourite: { name: string; operationNotes: string; defaultLocation: string }) {
+  const favourites = getUserFavourites(userId)
+  favourites.push({ ...favourite, id: generateId() })
+  localStorage.setItem(`surgirecord_favourites_${userId}`, JSON.stringify(favourites))
+}
+
+export function removeUserFavourite(userId: string, favouriteId: string) {
+  const favourites = getUserFavourites(userId).filter(f => f.id !== favouriteId)
+  localStorage.setItem(`surgirecord_favourites_${userId}`, JSON.stringify(favourites))
+}

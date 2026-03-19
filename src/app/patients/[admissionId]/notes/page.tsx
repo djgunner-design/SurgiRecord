@@ -52,22 +52,22 @@ export default function NotesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-700 text-white px-6 py-3 rounded-t-xl">
+      <div className="bg-gray-700 dark:bg-slate-700 text-white px-6 py-3 rounded-t-xl">
         <h2 className="text-lg font-semibold">CLINICAL NOTES</h2>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         {/* Notes List */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-700">Notes List</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Notes List</h3>
             <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
               <Plus className="w-4 h-4" /> New
             </button>
           </div>
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-700 text-white text-sm">
+              <tr className="bg-gray-700 dark:bg-slate-700 text-white text-sm">
                 <th className="px-4 py-3 text-left font-medium">DATE/TIME</th>
                 <th className="px-4 py-3 text-left font-medium">NOTES</th>
                 <th className="px-4 py-3 text-left font-medium">USER</th>
@@ -78,15 +78,15 @@ export default function NotesPage() {
               {allNotes.map(note => {
                 const user = findUser(note.userId)
                 return (
-                  <tr key={note.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                  <tr key={note.id} className="border-b border-gray-100 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700">
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {new Date(note.dateTime).toLocaleString('en-AU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{note.content}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 font-medium">{user?.initials}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{note.content}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 font-medium">{user?.initials}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button className="p-1.5 text-gray-400 hover:text-cyan-600 rounded transition-colors">
@@ -113,7 +113,7 @@ export default function NotesPage() {
               })}
               {allNotes.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-8 text-center text-gray-400">No notes recorded</td>
+                  <td colSpan={4} className="px-4 py-8 text-center text-gray-400 dark:text-gray-500">No notes recorded</td>
                 </tr>
               )}
             </tbody>
@@ -121,8 +121,8 @@ export default function NotesPage() {
         </div>
 
         {/* New Note Form */}
-        <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Add Note</h3>
+        <div className="border-t border-gray-200 dark:border-slate-700 pt-6">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Add Note</h3>
           <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}

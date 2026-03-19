@@ -22,6 +22,7 @@ import {
   Menu,
   X,
   Camera,
+  Star,
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -79,6 +80,7 @@ export default function PatientSidebar({ admissionId, collapsed, onToggle }: Sid
         { label: 'Intra-Operative', href: `${basePath}/intra-operative` },
         { label: 'Prostheses/Implants', href: `${basePath}/implants` },
         { label: 'Operation Report', href: `${basePath}/operation-report` },
+        { label: 'Favourites', href: `${basePath}/favourites` },
       ],
     },
     {

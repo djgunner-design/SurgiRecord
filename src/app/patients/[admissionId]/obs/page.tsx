@@ -106,11 +106,11 @@ export default function ObservationsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gray-700 text-white px-6 py-3 rounded-t-xl">
+      <div className="bg-gray-700 dark:bg-slate-700 text-white px-6 py-3 rounded-t-xl">
         <h2 className="text-lg font-semibold">OBSERVATIONS</h2>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => router.back()}
@@ -135,8 +135,8 @@ export default function ObservationsPage() {
           {/* Charts */}
           <div className="lg:col-span-2 space-y-6">
             {/* Respiratory Rate */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Respiratory Rate (breaths/min)</h3>
+            <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Respiratory Rate (breaths/min)</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -154,8 +154,8 @@ export default function ObservationsPage() {
             </div>
 
             {/* Heart Rate */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Heart Rate (bpm)</h3>
+            <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Heart Rate (bpm)</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -171,8 +171,8 @@ export default function ObservationsPage() {
             </div>
 
             {/* Blood Pressure */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Blood Pressure (mmHg)</h3>
+            <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Blood Pressure (mmHg)</h3>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -192,8 +192,8 @@ export default function ObservationsPage() {
             </div>
 
             {/* SpO2 */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">SpO2 (%)</h3>
+            <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">SpO2 (%)</h3>
               <ResponsiveContainer width="100%" height={150}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -209,8 +209,8 @@ export default function ObservationsPage() {
             </div>
 
             {/* Temperature */}
-            <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Temperature (°C)</h3>
+            <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Temperature (°C)</h3>
               <ResponsiveContainer width="100%" height={150}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -228,23 +228,23 @@ export default function ObservationsPage() {
 
           {/* New Observation Form */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">New Observation</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b pb-2">New Observation</h3>
             <form ref={formRef} className="space-y-3" onSubmit={(e) => e.preventDefault()}>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Date</label>
-                <input name="obsDate" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Date</label>
+                <input name="obsDate" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Time</label>
-                <input name="obsTime" type="time" defaultValue={new Date().toTimeString().slice(0,5)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Time</label>
+                <input name="obsTime" type="time" defaultValue={new Date().toTimeString().slice(0,5)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">RR</label>
-                <input name="obsRr" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="breaths/min" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">RR</label>
+                <input name="obsRr" type="number" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" placeholder="breaths/min" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Resp Distress</label>
-                <select name="obsRespDistress" className="w-full px-3 py-2 border rounded-lg text-sm">
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Resp Distress</label>
+                <select name="obsRespDistress" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                   <option value="">Select...</option>
                   <option>None</option>
                   <option>Mild</option>
@@ -253,36 +253,36 @@ export default function ObservationsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">SpO2</label>
-                <input name="obsSpo2" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="%" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">SpO2</label>
+                <input name="obsSpo2" type="number" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" placeholder="%" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">O2 L/min</label>
-                <input type="number" step="0.5" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">O2 L/min</label>
+                <input type="number" step="0.5" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Heart Rate</label>
-                <input name="obsHr" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="bpm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Heart Rate</label>
+                <input name="obsHr" type="number" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" placeholder="bpm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">BP Systolic</label>
-                <input name="obsBpSystolic" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">BP Systolic</label>
+                <input name="obsBpSystolic" type="number" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">BP Diastolic</label>
-                <input name="obsBpDiastolic" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">BP Diastolic</label>
+                <input name="obsBpDiastolic" type="number" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Temperature</label>
-                <input name="obsTemp" type="number" step="0.1" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="°C" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Temperature</label>
+                <input name="obsTemp" type="number" step="0.1" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" placeholder="°C" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Pain Score (0-10)</label>
-                <input name="obsPainScore" type="number" min="0" max="10" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pain Score (0-10)</label>
+                <input name="obsPainScore" type="number" min="0" max="10" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Comments</label>
-                <textarea name="obsComments" className="w-full px-3 py-2 border rounded-lg text-sm" rows={3} />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Comments</label>
+                <textarea name="obsComments" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={3} />
               </div>
               <button
                 type="button"
@@ -293,15 +293,15 @@ export default function ObservationsPage() {
               </button>
             </form>
 
-            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2 pt-4">Wound Assessment</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 border-b pb-2 pt-4">Wound Assessment</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Site</label>
-                <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Site</label>
+                <input type="text" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Ooze</label>
-                <select className="w-full px-3 py-2 border rounded-lg text-sm">
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Ooze</label>
+                <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                   <option value="">Select...</option>
                   <option>None</option>
                   <option>Minimal</option>
@@ -310,8 +310,8 @@ export default function ObservationsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Color</label>
-                <input type="text" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Color</label>
+                <input type="text" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
             </div>
           </div>
@@ -319,11 +319,11 @@ export default function ObservationsPage() {
 
         {/* Observations Table */}
         <div className="mt-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Entered Observations</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Entered Observations</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-100 text-gray-600">
+                <tr className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400">
                   <th className="px-3 py-2 text-left">Time</th>
                   <th className="px-3 py-2 text-center">RR</th>
                   <th className="px-3 py-2 text-center">SpO2</th>
@@ -337,14 +337,14 @@ export default function ObservationsPage() {
                 {allObservations.map(obs => {
                   const user = findUser(obs.userId)
                   return (
-                    <tr key={obs.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-700">{new Date(obs.time).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <tr key={obs.id} className="border-b border-gray-50 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700">
+                      <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{new Date(obs.time).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' })}</td>
                       <td className="px-3 py-2 text-center">{obs.rr}</td>
                       <td className="px-3 py-2 text-center">{obs.spo2}</td>
                       <td className="px-3 py-2 text-center">{obs.hr}</td>
                       <td className="px-3 py-2 text-center">{obs.bpSystolic}/{obs.bpDiastolic}</td>
                       <td className="px-3 py-2 text-center">{obs.temp}</td>
-                      <td className="px-3 py-2 text-center text-gray-500">{user?.initials}</td>
+                      <td className="px-3 py-2 text-center text-gray-500 dark:text-gray-400">{user?.initials}</td>
                     </tr>
                   )
                 })}
