@@ -3,43 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Home, Settings, RefreshCw, Search, LogOut, Moon, Sun, Globe, Printer, ChevronDown, Columns3, CheckSquare, FileText, BarChart3 } from 'lucide-react'
-import { sampleAdmissions, sampleUsers, findUser, findPatient } from '@/lib/sample-data'
+import { sampleAdmissions, sampleUsers, findUser, findPatient, ALL_STATUSES, getStatusLabel, getStatusRowColor, getStatusBadgeColor } from '@/lib/sample-data'
 import { getAdmissionStatus, updateAdmissionStatus } from '@/lib/store'
-
-function getStatusColor(status: string): string {
-  switch (status) {
-    case 'DISCHARGED': return 'bg-green-50 border-l-4 border-l-green-500 dark:bg-green-950/30'
-    case 'BOOKED': return 'bg-blue-50 border-l-4 border-l-blue-500 dark:bg-blue-950/30'
-    case 'CANCELLED': return 'bg-red-50 border-l-4 border-l-red-500 dark:bg-red-950/30'
-    case 'IN_THEATRE': return 'bg-yellow-50 border-l-4 border-l-yellow-500 dark:bg-yellow-950/30'
-    case 'RECOVERY_1': return 'bg-emerald-50 border-l-4 border-l-emerald-400 dark:bg-emerald-950/30'
-    case 'RECOVERY_2': return 'bg-teal-50 border-l-4 border-l-teal-500 dark:bg-teal-950/30'
-    case 'ADMITTED': return 'bg-sky-50 border-l-4 border-l-sky-500 dark:bg-sky-950/30'
-    default: return 'bg-gray-50 border-l-4 border-l-gray-300 dark:bg-gray-800/30'
-  }
-}
-
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case 'RECOVERY_1': return 'Recovery Stage 1'
-    case 'RECOVERY_2': return 'Recovery Stage 2'
-    case 'IN_THEATRE': return 'In Theatre'
-    default: return status.charAt(0) + status.slice(1).toLowerCase()
-  }
-}
-
-function getStatusBadgeColor(status: string): string {
-  switch (status) {
-    case 'DISCHARGED': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    case 'BOOKED': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-    case 'CANCELLED': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-    case 'IN_THEATRE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-    case 'RECOVERY_1': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
-    case 'RECOVERY_2': return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200'
-    case 'ADMITTED': return 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200'
-    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-  }
-}
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -100,7 +65,7 @@ export default function DashboardPage() {
   })
 
   const locations = [...new Set(sampleAdmissions.map(a => a.location).filter(Boolean))]
-  const statuses = ['Any', 'BOOKED', 'ADMITTED', 'IN_THEATRE', 'RECOVERY_1', 'RECOVERY_2', 'DISCHARGED', 'CANCELLED']
+  const statuses = ['Any', ...ALL_STATUSES]
 
   const handleLogout = () => {
     document.cookie = 'userId=; path=/; max-age=0'
@@ -339,7 +304,7 @@ export default function DashboardPage() {
                   return (
                     <tr
                       key={admission.id}
-                      className={`cursor-pointer hover:brightness-95 dark:hover:brightness-125 transition-all border-b border-gray-100 dark:border-slate-700 ${getStatusColor(effectiveStatus)} ${isSelected ? 'ring-2 ring-inset ring-cyan-500' : ''}`}
+                      className={`cursor-pointer hover:brightness-95 dark:hover:brightness-125 transition-all border-b border-gray-100 dark:border-slate-700 ${getStatusRowColor(effectiveStatus)} ${isSelected ? 'ring-2 ring-inset ring-cyan-500' : ''}`}
                     >
                       <td className="px-4 py-4">
                         <input

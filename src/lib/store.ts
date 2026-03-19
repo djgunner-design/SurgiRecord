@@ -3,6 +3,8 @@
 // Simple localStorage-based store for demo/development
 // Will be replaced with Prisma/PostgreSQL in production
 
+import { findAdmission as findAdmissionFromSample } from '@/lib/sample-data'
+
 export type PostOpCall = {
   id: string
   admissionId: string
@@ -362,4 +364,242 @@ export function clearUndoAction(id: string) {
   saveUndoMeta(meta)
   undoCallbacks.delete(id)
   notifyUndoListeners()
+}
+
+// Step Completion Tracking
+const STEP_COMPLETION_KEY = 'surgirecord_step_completion'
+
+export const ADMISSION_STEPS = [
+  'Nursing Admission',
+  'Pre-Anaesthetic',
+  'Falls Risk',
+  'Pressure Risk',
+  'Delirium Risk',
+  'VTE Risk',
+  'Surgical Checklist',
+  'Count Sheet',
+  'Intra-Operative',
+  'Prostheses/Implants',
+  'Operation Report',
+  'Stage 1',
+  'Stage 2',
+  'Fluid Balance',
+  'Handover from Recovery',
+  'Patient Transfer',
+  'Discharge Checklist',
+  'Discharge Summary',
+  'Post Op Call Details',
+  'Emergency Resuscitation',
+  'Consent Forms',
+  'Photos & Scans',
+] as const
+
+function getStepStore(): Record<string, Record<string, boolean>> {
+  if (typeof window === 'undefined') return {}
+  const data = localStorage.getItem(STEP_COMPLETION_KEY)
+  return data ? JSON.parse(data) : {}
+}
+
+function saveStepStore(store: Record<string, Record<string, boolean>>) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(STEP_COMPLETION_KEY, JSON.stringify(store))
+}
+
+export function getStepCompletion(admissionId: string): Record<string, boolean> {
+  const store = getStepStore()
+  if (store[admissionId]) return store[admissionId]
+
+  // Generate default completion based on admission status from sample data
+  const adm = findAdmissionFromSample(admissionId)
+  if (!adm) return {}
+
+  const effectiveStatus = getAdmissionStatus(admissionId) || adm.status
+  const defaults: Record<string, boolean> = {}
+
+  if (effectiveStatus === 'DISCHARGED') {
+    // Discharged patients have most steps complete
+    ADMISSION_STEPS.forEach(s => { defaults[s] = true })
+    defaults['Emergency Resuscitation'] = false
+  } else if (effectiveStatus === 'WARD') {
+    const wardDone = [
+      'Nursing Admission', 'Pre-Anaesthetic', 'Falls Risk', 'Pressure Risk',
+      'Delirium Risk', 'VTE Risk', 'Surgical Checklist', 'Count Sheet',
+      'Intra-Operative', 'Operation Report', 'Stage 1', 'Consent Forms',
+      'Handover from Recovery', 'Patient Transfer',
+    ]
+    ADMISSION_STEPS.forEach(s => { defaults[s] = wardDone.includes(s) })
+  } else if (effectiveStatus === 'RECOVERY_1' || effectiveStatus === 'RECOVERY_2') {
+    const recoveryDone = [
+      'Nursing Admission', 'Pre-Anaesthetic', 'Falls Risk', 'Pressure Risk',
+      'Delirium Risk', 'VTE Risk', 'Surgical Checklist', 'Count Sheet',
+      'Intra-Operative', 'Operation Report', 'Stage 1', 'Consent Forms',
+    ]
+    ADMISSION_STEPS.forEach(s => { defaults[s] = recoveryDone.includes(s) })
+  } else if (effectiveStatus === 'OPERATION_STARTED') {
+    const opDone = [
+      'Nursing Admission', 'Pre-Anaesthetic', 'Falls Risk', 'Pressure Risk',
+      'Delirium Risk', 'VTE Risk', 'Surgical Checklist', 'Consent Forms',
+    ]
+    ADMISSION_STEPS.forEach(s => { defaults[s] = opDone.includes(s) })
+  } else if (effectiveStatus === 'ANAESTHESIA_INDUCTION') {
+    const anaesthDone = [
+      'Nursing Admission', 'Pre-Anaesthetic', 'Falls Risk', 'Pressure Risk',
+      'Delirium Risk', 'VTE Risk', 'Surgical Checklist', 'Consent Forms',
+    ]
+    ADMISSION_STEPS.forEach(s => { defaults[s] = anaesthDone.includes(s) })
+  } else if (effectiveStatus === 'CHECKED_IN') {
+    const checkedInDone = [
+      'Nursing Admission', 'Pre-Anaesthetic', 'Falls Risk', 'Pressure Risk',
+      'Delirium Risk', 'VTE Risk',
+    ]
+    ADMISSION_STEPS.forEach(s => { defaults[s] = checkedInDone.includes(s) })
+  } else if (effectiveStatus === 'ARRIVED') {
+    const arrivedDone = [
+      'Nursing Admission',
+    ]
+    ADMISSION_STEPS.forEach(s => { defaults[s] = arrivedDone.includes(s) })
+  } else {
+    // PRE_ADMITTED, BOOKED, CANCELLED - nothing completed
+    ADMISSION_STEPS.forEach(s => { defaults[s] = false })
+  }
+
+  return defaults
+}
+
+export function setStepCompleted(admissionId: string, step: string, completed: boolean) {
+  const store = getStepStore()
+  if (!store[admissionId]) {
+    store[admissionId] = getStepCompletion(admissionId)
+  }
+  store[admissionId][step] = completed
+  saveStepStore(store)
+}
+
+export function getCompletionPercentage(admissionId: string): number {
+  const completion = getStepCompletion(admissionId)
+  const steps = Object.values(completion)
+  if (steps.length === 0) return 0
+  const done = steps.filter(Boolean).length
+  return Math.round((done / steps.length) * 100)
+}
+
+// Patient Edits (demographics overrides stored in localStorage)
+const PATIENT_EDITS_KEY = 'surgirecord_patient_edits'
+
+export type PatientEdit = {
+  firstName: string
+  lastName: string
+  title: string | null
+  dob: string
+  sex: string
+  weight: number | null
+  height: number | null
+  address: string | null
+  suburb: string | null
+  state: string | null
+  postcode: string | null
+  phone: string | null
+}
+
+function getPatientEditsStore(): Record<string, PatientEdit> {
+  if (typeof window === 'undefined') return {}
+  const data = localStorage.getItem(PATIENT_EDITS_KEY)
+  return data ? JSON.parse(data) : {}
+}
+
+export function getPatientEdits(patientId: string): PatientEdit | null {
+  return getPatientEditsStore()[patientId] || null
+}
+
+export function savePatientEdits(patientId: string, edits: PatientEdit) {
+  const store = getPatientEditsStore()
+  store[patientId] = edits
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(PATIENT_EDITS_KEY, JSON.stringify(store))
+  }
+}
+
+// Consultation Notes
+const CONSULTATION_NOTES_KEY = 'surgirecord_consultation_notes'
+
+export type ConsultationNote = {
+  id: string
+  admissionId: string
+  content: string
+  updatedAt: string
+}
+
+function getConsultationNotesStore(): ConsultationNote[] {
+  if (typeof window === 'undefined') return []
+  const data = localStorage.getItem(CONSULTATION_NOTES_KEY)
+  return data ? JSON.parse(data) : []
+}
+
+export function getConsultationNote(admissionId: string): ConsultationNote | null {
+  const notes = getConsultationNotesStore()
+  return notes.find(n => n.admissionId === admissionId) || null
+}
+
+export function saveConsultationNote(admissionId: string, content: string): ConsultationNote {
+  const notes = getConsultationNotesStore()
+  const existing = notes.findIndex(n => n.admissionId === admissionId)
+  const note: ConsultationNote = {
+    id: existing >= 0 ? notes[existing].id : generateId(),
+    admissionId,
+    content,
+    updatedAt: new Date().toISOString(),
+  }
+  if (existing >= 0) {
+    notes[existing] = note
+  } else {
+    notes.push(note)
+  }
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(CONSULTATION_NOTES_KEY, JSON.stringify(notes))
+  }
+  return note
+}
+
+// Return to Theatre tracking
+const RETURN_TO_THEATRE_KEY = 'surgirecord_return_to_theatre'
+
+export function getReturnToTheatreCount(admissionId: string): number {
+  if (typeof window === 'undefined') return 0
+  const data = localStorage.getItem(RETURN_TO_THEATRE_KEY)
+  const store: Record<string, number> = data ? JSON.parse(data) : {}
+  return store[admissionId] || 0
+}
+
+export function incrementReturnToTheatre(admissionId: string): number {
+  if (typeof window === 'undefined') return 0
+  const data = localStorage.getItem(RETURN_TO_THEATRE_KEY)
+  const store: Record<string, number> = data ? JSON.parse(data) : {}
+  store[admissionId] = (store[admissionId] || 0) + 1
+  localStorage.setItem(RETURN_TO_THEATRE_KEY, JSON.stringify(store))
+  return store[admissionId]
+}
+
+// Falls Risk / Pressure Risk
+const RISK_SCORES_KEY = 'surgirecord_risk_scores'
+
+export type RiskScores = {
+  fallsRisk: string
+  fallsLevel: 'No Risk' | 'Low Risk' | 'Medium Risk' | 'High Risk'
+  pressureRisk: string
+  pressureLevel: 'No Risk' | 'Low Risk' | 'Medium Risk' | 'High Risk'
+}
+
+export function getRiskScores(admissionId: string): RiskScores {
+  if (typeof window === 'undefined') return { fallsRisk: '2', fallsLevel: 'Low Risk', pressureRisk: '0', pressureLevel: 'No Risk' }
+  const data = localStorage.getItem(RISK_SCORES_KEY)
+  const store: Record<string, RiskScores> = data ? JSON.parse(data) : {}
+  return store[admissionId] || { fallsRisk: '2', fallsLevel: 'Low Risk', pressureRisk: '0', pressureLevel: 'No Risk' }
+}
+
+export function saveRiskScores(admissionId: string, scores: RiskScores) {
+  if (typeof window === 'undefined') return
+  const data = localStorage.getItem(RISK_SCORES_KEY)
+  const store: Record<string, RiskScores> = data ? JSON.parse(data) : {}
+  store[admissionId] = scores
+  localStorage.setItem(RISK_SCORES_KEY, JSON.stringify(store))
 }

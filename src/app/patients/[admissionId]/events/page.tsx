@@ -8,12 +8,12 @@ export default function EventsPage() {
   const admissionId = params.admissionId as string
 
   const events = [
-    { id: '1', type: 'Status Change', description: 'Status changed to ADMITTED', dateTime: '2026-03-19 06:41', user: 'KLE' },
+    { id: '1', type: 'Status Change', description: 'Status changed to Checked-In', dateTime: '2026-03-19 06:41', user: 'KLE' },
     { id: '2', type: 'Handover', description: 'Admission handover completed', dateTime: '2026-03-19 06:45', user: 'KLE' },
-    { id: '3', type: 'Status Change', description: 'Status changed to IN_THEATRE', dateTime: '2026-03-19 08:01', user: 'MOR' },
+    { id: '3', type: 'Status Change', description: 'Status changed to Operation Started', dateTime: '2026-03-19 08:01', user: 'MOR' },
     { id: '4', type: 'Procedure', description: 'Procedure started', dateTime: '2026-03-19 08:01', user: 'DS' },
     { id: '5', type: 'Handover', description: 'Procedure handover completed', dateTime: '2026-03-19 11:45', user: 'MOR' },
-    { id: '6', type: 'Status Change', description: 'Status changed to RECOVERY_1', dateTime: '2026-03-19 11:30', user: 'GCA' },
+    { id: '6', type: 'Status Change', description: 'Status changed to Recovery Stage 1 Started', dateTime: '2026-03-19 11:30', user: 'GCA' },
   ]
 
   return (

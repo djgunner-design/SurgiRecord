@@ -7,24 +7,32 @@ import { sampleAdmissions, findPatient, findUser } from '@/lib/sample-data'
 import { getAdmissionStatus, updateAdmissionStatus } from '@/lib/store'
 
 const COLUMNS = [
-  { status: 'BOOKED', label: 'Waiting', color: 'bg-blue-500', headerBg: 'bg-blue-500', darkHeaderBg: 'dark:bg-blue-700' },
-  { status: 'ADMITTED', label: 'Admitted', color: 'bg-sky-500', headerBg: 'bg-sky-500', darkHeaderBg: 'dark:bg-sky-700' },
-  { status: 'PRE_OP', label: 'Pre-Op', color: 'bg-indigo-500', headerBg: 'bg-indigo-500', darkHeaderBg: 'dark:bg-indigo-700' },
-  { status: 'IN_THEATRE', label: 'In Theatre', color: 'bg-yellow-500', headerBg: 'bg-yellow-500', darkHeaderBg: 'dark:bg-yellow-700' },
-  { status: 'RECOVERY_1', label: 'Recovery 1', color: 'bg-emerald-500', headerBg: 'bg-emerald-500', darkHeaderBg: 'dark:bg-emerald-700' },
+  { status: 'PRE_ADMITTED', label: 'Pre Admitted', color: 'bg-purple-500', headerBg: 'bg-purple-500', darkHeaderBg: 'dark:bg-purple-700' },
+  { status: 'BOOKED', label: 'Booked', color: 'bg-blue-500', headerBg: 'bg-blue-500', darkHeaderBg: 'dark:bg-blue-700' },
+  { status: 'ARRIVED', label: 'Arrived', color: 'bg-yellow-500', headerBg: 'bg-yellow-500', darkHeaderBg: 'dark:bg-yellow-700' },
+  { status: 'CHECKED_IN', label: 'Checked-In', color: 'bg-orange-500', headerBg: 'bg-orange-500', darkHeaderBg: 'dark:bg-orange-700' },
+  { status: 'ANAESTHESIA_INDUCTION', label: 'Anaesthesia', color: 'bg-pink-500', headerBg: 'bg-pink-500', darkHeaderBg: 'dark:bg-pink-700' },
+  { status: 'OPERATION_STARTED', label: 'Operation', color: 'bg-red-500', headerBg: 'bg-red-500', darkHeaderBg: 'dark:bg-red-700' },
+  { status: 'RECOVERY_1', label: 'Recovery 1', color: 'bg-green-500', headerBg: 'bg-green-500', darkHeaderBg: 'dark:bg-green-700' },
+  { status: 'WARD', label: 'WARD', color: 'bg-emerald-600', headerBg: 'bg-emerald-600', darkHeaderBg: 'dark:bg-emerald-700' },
   { status: 'RECOVERY_2', label: 'Recovery 2', color: 'bg-teal-500', headerBg: 'bg-teal-500', darkHeaderBg: 'dark:bg-teal-700' },
-  { status: 'DISCHARGED', label: 'Discharged', color: 'bg-green-500', headerBg: 'bg-green-600', darkHeaderBg: 'dark:bg-green-700' },
+  { status: 'DISCHARGED', label: 'Discharged', color: 'bg-gray-500', headerBg: 'bg-gray-500', darkHeaderBg: 'dark:bg-gray-700' },
+  { status: 'CANCELLED', label: 'Cancelled', color: 'bg-gray-700', headerBg: 'bg-gray-700', darkHeaderBg: 'dark:bg-gray-800' },
 ] as const
 
 function getCardBorderColor(status: string): string {
   switch (status) {
+    case 'PRE_ADMITTED': return 'border-l-purple-500'
     case 'BOOKED': return 'border-l-blue-500'
-    case 'ADMITTED': return 'border-l-sky-500'
-    case 'PRE_OP': return 'border-l-indigo-500'
-    case 'IN_THEATRE': return 'border-l-yellow-500'
-    case 'RECOVERY_1': return 'border-l-emerald-500'
+    case 'ARRIVED': return 'border-l-yellow-500'
+    case 'CHECKED_IN': return 'border-l-orange-500'
+    case 'ANAESTHESIA_INDUCTION': return 'border-l-pink-500'
+    case 'OPERATION_STARTED': return 'border-l-red-500'
+    case 'RECOVERY_1': return 'border-l-green-500'
+    case 'WARD': return 'border-l-emerald-600'
     case 'RECOVERY_2': return 'border-l-teal-500'
-    case 'DISCHARGED': return 'border-l-green-500'
+    case 'DISCHARGED': return 'border-l-gray-500'
+    case 'CANCELLED': return 'border-l-gray-700'
     default: return 'border-l-gray-400'
   }
 }
@@ -188,7 +196,7 @@ export default function FlowBoardPage() {
             return (
               <div
                 key={column.status}
-                className={`flex flex-col w-64 rounded-xl overflow-hidden border transition-all ${
+                className={`flex flex-col w-56 rounded-xl overflow-hidden border transition-all ${
                   isOver
                     ? 'border-cyan-400 dark:border-cyan-500 ring-2 ring-cyan-200 dark:ring-cyan-800'
                     : 'border-gray-200 dark:border-slate-700'

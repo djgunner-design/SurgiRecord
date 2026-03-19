@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -24,6 +24,7 @@ import {
   Camera,
   Star,
 } from 'lucide-react'
+import { getStepCompletion, setStepCompleted } from '@/lib/store'
 
 interface SidebarProps {
   admissionId: string
@@ -35,6 +36,22 @@ interface NavSection {
   title: string
   icon: React.ReactNode
   items: { label: string; href: string; icon?: React.ReactNode }[]
+}
+
+function CompletionIndicator({ completed, onToggle }: { completed: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle() }}
+      className="flex-shrink-0 w-5 h-5 flex items-center justify-center"
+      title={completed ? 'Mark as incomplete' : 'Mark as complete'}
+    >
+      {completed ? (
+        <span className="text-green-400 text-sm">&#x2705;</span>
+      ) : (
+        <span className="w-3.5 h-3.5 rounded-full border-2 border-gray-400 dark:border-slate-500 inline-block" />
+      )}
+    </button>
+  )
 }
 
 export default function PatientSidebar({ admissionId, collapsed, onToggle }: SidebarProps) {
@@ -49,9 +66,27 @@ export default function PatientSidebar({ admissionId, collapsed, onToggle }: Sid
     discharge: false,
     documents: false,
   })
+  const [completionState, setCompletionState] = useState(() => getStepCompletion(admissionId))
+
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const toggleSection = (key: string) => {
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const scrollToSection = useCallback((key: string) => {
+    // Expand section first
+    setOpenSections(prev => ({ ...prev, [key]: true }))
+    // Scroll to it after a tick
+    setTimeout(() => {
+      sectionRefs.current[key]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 50)
+  }, [])
+
+  const handleToggleCompletion = (step: string) => {
+    const current = completionState[step] ?? false
+    setStepCompleted(admissionId, step, !current)
+    setCompletionState(prev => ({ ...prev, [step]: !current }))
   }
 
   const isCollapsed = collapsed ?? false
@@ -64,6 +99,8 @@ export default function PatientSidebar({ admissionId, collapsed, onToggle }: Sid
       items: [
         { label: 'Nursing Admission', href: `${basePath}/admission` },
         { label: 'Pre-Anaesthetic', href: `${basePath}/pre-anaesthetic` },
+        { label: 'Anaesthetic Record', href: `${basePath}/anaesthetic` },
+        { label: 'Health Assessment', href: `${basePath}/health-assessment` },
         { label: 'Falls Risk', href: `${basePath}/falls-risk` },
         { label: 'Pressure Risk', href: `${basePath}/pressure-risk` },
         { label: 'Delirium Risk', href: `${basePath}/delirium-risk` },
@@ -122,83 +159,115 @@ export default function PatientSidebar({ admissionId, collapsed, onToggle }: Sid
       items: [
         { label: 'Consent Forms', href: `${basePath}/consent` },
         { label: 'Photos & Scans', href: `${basePath}/photos` },
+        { label: 'Body Chart', href: `${basePath}/body-chart` },
       ],
     },
   ]
 
+  // Quick nav icon definitions matching the 6 main sections
+  const quickNavIcons = [
+    { key: 'admission', icon: <ClipboardList className="w-4 h-4" />, title: 'Admission' },
+    { key: 'operation', icon: <Scissors className="w-4 h-4" />, title: 'Operation' },
+    { key: 'recovery', icon: <Heart className="w-4 h-4" />, title: 'Recovery' },
+    { key: 'ward', icon: <Activity className="w-4 h-4" />, title: 'Ward' },
+    { key: 'discharge', icon: <LogOutIcon className="w-4 h-4" />, title: 'Discharge' },
+    { key: 'documents', icon: <Camera className="w-4 h-4" />, title: 'Documents' },
+  ]
+
+  // Calculate section completion
+  const getSectionCompletion = (section: NavSection) => {
+    const completable = section.items.filter(i => i.label !== 'Favourites' && i.label !== 'Post-Op Calls')
+    if (completable.length === 0) return null
+    const done = completable.filter(i => completionState[i.label]).length
+    return { done, total: completable.length }
+  }
+
   const sidebarContent = (
     <>
-      {/* Quick Nav Icons */}
-      <div className="flex gap-1 p-2 bg-gray-800 dark:bg-slate-900">
-        <Link href={`${basePath}`} className="p-2 rounded hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors" title="Overview">
-          <BarChart3 className="w-4 h-4" />
-        </Link>
-        <Link href={`${basePath}/obs`} className="p-2 rounded hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors" title="Observations">
-          <Activity className="w-4 h-4" />
-        </Link>
-        <Link href={`${basePath}/meds`} className="p-2 rounded hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors" title="Medications">
-          <Pill className="w-4 h-4" />
-        </Link>
-        <Link href={`${basePath}/notes`} className="p-2 rounded hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors" title="Notes">
-          <FileText className="w-4 h-4" />
-        </Link>
-        <Link href={`${basePath}/handover`} className="p-2 rounded hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors" title="Handover">
-          <Truck className="w-4 h-4" />
-        </Link>
-        <Link href={`${basePath}/events`} className="p-2 rounded hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors" title="Events">
-          <CheckSquare className="w-4 h-4" />
-        </Link>
+      {/* Quick Nav Icon Bar */}
+      <div className="flex items-center justify-between gap-0.5 px-2 py-2 bg-gray-800 dark:bg-slate-900 border-b border-gray-600 dark:border-slate-700">
+        {quickNavIcons.map((nav) => (
+          <button
+            key={nav.key}
+            onClick={() => scrollToSection(nav.key)}
+            className="p-2 rounded hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors flex-1 flex items-center justify-center"
+            title={nav.title}
+          >
+            {nav.icon}
+          </button>
+        ))}
       </div>
 
       {/* Sections */}
       <nav className="py-2">
-        {sections.map((section) => (
-          <div key={section.key}>
-            <button
-              onClick={() => toggleSection(section.key)}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                {section.icon}
-                {section.title}
-              </div>
-              {openSections[section.key] ? (
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              ) : (
-                <ChevronRight className="w-4 h-4 text-gray-400" />
+        {sections.map((section) => {
+          const sectionCompletion = getSectionCompletion(section)
+          return (
+            <div key={section.key} ref={(el) => { sectionRefs.current[section.key] = el }}>
+              <button
+                onClick={() => toggleSection(section.key)}
+                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium hover:bg-gray-600 dark:hover:bg-slate-700 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  {section.icon}
+                  {section.title}
+                  {sectionCompletion && (
+                    <span className="text-[10px] text-gray-400 dark:text-slate-500 ml-1">
+                      {sectionCompletion.done}/{sectionCompletion.total}
+                    </span>
+                  )}
+                </div>
+                {openSections[section.key] ? (
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                )}
+              </button>
+              {openSections[section.key] && (
+                <div className="pb-1">
+                  {section.items.map((item) => {
+                    const isActive = pathname === item.href
+                    const isCompletable = item.label !== 'Favourites' && item.label !== 'Post-Op Calls'
+                    const isCompleted = completionState[item.label] ?? false
+
+                    return (
+                      <div
+                        key={item.label}
+                        className={`flex items-center gap-2 transition-colors ${
+                          isActive
+                            ? 'bg-cyan-600 text-white'
+                            : 'text-gray-300 dark:text-slate-300 hover:bg-gray-600 dark:hover:bg-slate-700 hover:text-white'
+                        }`}
+                      >
+                        {isCompletable && (
+                          <div className="pl-3">
+                            <CompletionIndicator
+                              completed={isCompleted}
+                              onToggle={() => handleToggleCompletion(item.label)}
+                            />
+                          </div>
+                        )}
+                        <Link
+                          href={item.href}
+                          onClick={() => setMobileOpen(false)}
+                          className={`block flex-1 ${isCompletable ? 'pl-1' : 'pl-10'} pr-4 py-2 text-sm`}
+                        >
+                          {item.label}
+                        </Link>
+                      </div>
+                    )
+                  })}
+                </div>
               )}
-            </button>
-            {openSections[section.key] && (
-              <div className="pb-1">
-                {section.items.map((item) => {
-                  const isActive = pathname === item.href
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`block pl-10 pr-4 py-2 text-sm transition-colors ${
-                        isActive
-                          ? 'bg-cyan-600 text-white'
-                          : 'text-gray-300 dark:text-slate-300 hover:bg-gray-600 dark:hover:bg-slate-700 hover:text-white'
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        ))}
+            </div>
+          )
+        })}
       </nav>
     </>
   )
 
   return (
     <>
-      {/* Mobile toggle button - rendered in the parent layout */}
-
       {/* Mobile overlay */}
       {mobileOpen && (
         <div

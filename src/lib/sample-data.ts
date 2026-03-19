@@ -1,3 +1,81 @@
+export type AdmissionStatus =
+  | 'PRE_ADMITTED'
+  | 'BOOKED'
+  | 'ARRIVED'
+  | 'CHECKED_IN'
+  | 'ANAESTHESIA_INDUCTION'
+  | 'OPERATION_STARTED'
+  | 'RECOVERY_1'
+  | 'WARD'
+  | 'RECOVERY_2'
+  | 'DISCHARGED'
+  | 'CANCELLED'
+
+export const ALL_STATUSES: AdmissionStatus[] = [
+  'PRE_ADMITTED',
+  'BOOKED',
+  'ARRIVED',
+  'CHECKED_IN',
+  'ANAESTHESIA_INDUCTION',
+  'OPERATION_STARTED',
+  'RECOVERY_1',
+  'WARD',
+  'RECOVERY_2',
+  'DISCHARGED',
+  'CANCELLED',
+]
+
+export function getStatusLabel(status: string): string {
+  switch (status) {
+    case 'PRE_ADMITTED': return 'Pre Admitted'
+    case 'BOOKED': return 'Booked'
+    case 'ARRIVED': return 'Arrived'
+    case 'CHECKED_IN': return 'Checked-In'
+    case 'ANAESTHESIA_INDUCTION': return 'Anaesthesia Induction Started'
+    case 'OPERATION_STARTED': return 'Operation Started'
+    case 'RECOVERY_1': return 'Recovery Stage 1 Started'
+    case 'WARD': return 'WARD'
+    case 'RECOVERY_2': return 'Recovery Stage 2'
+    case 'DISCHARGED': return 'Discharged'
+    case 'CANCELLED': return 'Cancelled'
+    default: return status.charAt(0) + status.slice(1).toLowerCase().replace(/_/g, ' ')
+  }
+}
+
+export function getStatusRowColor(status: string): string {
+  switch (status) {
+    case 'PRE_ADMITTED': return 'bg-purple-50 border-l-4 border-l-purple-400 dark:bg-purple-950/30'
+    case 'BOOKED': return 'bg-blue-50 border-l-4 border-l-blue-400 dark:bg-blue-950/30'
+    case 'ARRIVED': return 'bg-yellow-50 border-l-4 border-l-yellow-400 dark:bg-yellow-950/30'
+    case 'CHECKED_IN': return 'bg-orange-50 border-l-4 border-l-orange-400 dark:bg-orange-950/30'
+    case 'ANAESTHESIA_INDUCTION': return 'bg-pink-50 border-l-4 border-l-pink-400 dark:bg-pink-950/30'
+    case 'OPERATION_STARTED': return 'bg-red-50 border-l-4 border-l-red-500 dark:bg-red-950/30'
+    case 'RECOVERY_1': return 'bg-green-50 border-l-4 border-l-green-400 dark:bg-green-950/30'
+    case 'WARD': return 'bg-emerald-50 border-l-4 border-l-emerald-600 dark:bg-emerald-950/30'
+    case 'RECOVERY_2': return 'bg-teal-50 border-l-4 border-l-teal-500 dark:bg-teal-950/30'
+    case 'DISCHARGED': return 'bg-gray-50 border-l-4 border-l-gray-400 dark:bg-gray-800/30'
+    case 'CANCELLED': return 'bg-gray-100 border-l-4 border-l-gray-600 dark:bg-gray-900/40'
+    default: return 'bg-gray-50 border-l-4 border-l-gray-300 dark:bg-gray-800/30'
+  }
+}
+
+export function getStatusBadgeColor(status: string): string {
+  switch (status) {
+    case 'PRE_ADMITTED': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+    case 'BOOKED': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    case 'ARRIVED': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    case 'CHECKED_IN': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+    case 'ANAESTHESIA_INDUCTION': return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200'
+    case 'OPERATION_STARTED': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    case 'RECOVERY_1': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+    case 'WARD': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+    case 'RECOVERY_2': return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200'
+    case 'DISCHARGED': return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+    case 'CANCELLED': return 'bg-gray-200 text-gray-600 line-through dark:bg-gray-700 dark:text-gray-400'
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+  }
+}
+
 export const sampleUsers = [
   { id: '1', name: 'David Gunn', initials: 'DG', pin: '3034', role: 'SURGEON' as const },
   { id: '2', name: 'Dr David Sharp', initials: 'DS', pin: '1234', role: 'SURGEON' as const },
@@ -161,7 +239,7 @@ export const sampleAdmissions = [
     patientId: '1',
     date: new Date('2026-03-19'),
     time: '06:41',
-    status: 'RECOVERY_1' as const,
+    status: 'RECOVERY_1' as AdmissionStatus,
     operationNotes: 'ABDOMINOPLASTY AND MASTOPEXY WITH BILATERAL BREAST AUGMENTATION #COSMETIC',
     location: 'Theatre 1',
     surgeonId: '2',
@@ -176,7 +254,7 @@ export const sampleAdmissions = [
     patientId: '2',
     date: new Date('2026-03-19'),
     time: '07:00',
-    status: 'DISCHARGED' as const,
+    status: 'DISCHARGED' as AdmissionStatus,
     operationNotes: 'RIGHT CATARACT Alcon PanOptix Pro Toric PXYAT2 +21.50/+1.00 x 144EQR',
     location: 'Theatre 2',
     surgeonId: '1',
@@ -191,7 +269,7 @@ export const sampleAdmissions = [
     patientId: '3',
     date: new Date('2026-03-19'),
     time: '07:15',
-    status: 'DISCHARGED' as const,
+    status: 'DISCHARGED' as AdmissionStatus,
     operationNotes: 'RIGHT LOWER LID ECTROPIAN REPAIR BLOOD THINNER ASPIRIN/FISH OIL - HAS CEASED SURGERY CONNECT',
     location: 'Theatre 1',
     surgeonId: '3',
@@ -206,7 +284,7 @@ export const sampleAdmissions = [
     patientId: '4',
     date: new Date('2026-03-19'),
     time: '07:30',
-    status: 'DISCHARGED' as const,
+    status: 'DISCHARGED' as AdmissionStatus,
     operationNotes: 'RIGHT CATARACT Alcon Clareon Toric CNA0T2 +22.00/+1.00 x 162',
     location: 'Theatre 2',
     surgeonId: '1',
@@ -221,7 +299,7 @@ export const sampleAdmissions = [
     patientId: '5',
     date: new Date('2026-03-19'),
     time: null,
-    status: 'BOOKED' as const,
+    status: 'BOOKED' as AdmissionStatus,
     operationNotes: 'FOCUS - RIGHT CATARACT Alcon PanOptix Pro PXYAT0 +21.50',
     location: 'Theatre 2',
     surgeonId: '1',
@@ -236,7 +314,7 @@ export const sampleAdmissions = [
     patientId: '6',
     date: new Date('2026-03-19'),
     time: '08:00',
-    status: 'DISCHARGED' as const,
+    status: 'DISCHARGED' as AdmissionStatus,
     operationNotes: 'RIGHT CATARACT Alcon PanOptix Pro Toric PXYAT3 +20.50/+1.50 x 6EQR',
     location: 'Theatre 2',
     surgeonId: '1',
@@ -251,7 +329,7 @@ export const sampleAdmissions = [
     patientId: '7',
     date: new Date('2026-03-19'),
     time: '08:30',
-    status: 'DISCHARGED' as const,
+    status: 'DISCHARGED' as AdmissionStatus,
     operationNotes: 'BILATERAL LOWER LID ECTRIOPIAN REPAIR AND LOWER BLEPHAROPLASTY BLOOD THINNER: ASPIRIN',
     location: 'Theatre 1',
     surgeonId: '3',
@@ -266,7 +344,7 @@ export const sampleAdmissions = [
     patientId: '8',
     date: new Date('2026-03-19'),
     time: '09:00',
-    status: 'DISCHARGED' as const,
+    status: 'DISCHARGED' as AdmissionStatus,
     operationNotes: 'RIGHT CATARACT + HYDRUS J&J Puresee Toric +19.50 DET150 x 161EQR',
     location: 'Theatre 2',
     surgeonId: '1',

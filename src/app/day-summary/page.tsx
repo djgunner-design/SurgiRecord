@@ -3,27 +3,22 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Calendar, Moon, Sun, Printer, BarChart3, Users, Clock, AlertTriangle, XCircle } from 'lucide-react'
-import { sampleAdmissions, sampleUsers, findUser, findPatient } from '@/lib/sample-data'
+import { sampleAdmissions, sampleUsers, findUser, findPatient, getStatusLabel } from '@/lib/sample-data'
 import { getAdmissionStatus } from '@/lib/store'
-
-function getStatusLabel(status: string): string {
-  switch (status) {
-    case 'RECOVERY_1': return 'Recovery Stage 1'
-    case 'RECOVERY_2': return 'Recovery Stage 2'
-    case 'IN_THEATRE': return 'In Theatre'
-    default: return status.charAt(0) + status.slice(1).toLowerCase()
-  }
-}
 
 function getStatusDotColor(status: string): string {
   switch (status) {
-    case 'DISCHARGED': return 'bg-green-500'
+    case 'PRE_ADMITTED': return 'bg-purple-500'
     case 'BOOKED': return 'bg-blue-500'
-    case 'CANCELLED': return 'bg-red-500'
-    case 'IN_THEATRE': return 'bg-yellow-500'
-    case 'RECOVERY_1': return 'bg-emerald-400'
+    case 'ARRIVED': return 'bg-yellow-500'
+    case 'CHECKED_IN': return 'bg-orange-500'
+    case 'ANAESTHESIA_INDUCTION': return 'bg-pink-500'
+    case 'OPERATION_STARTED': return 'bg-red-500'
+    case 'RECOVERY_1': return 'bg-green-500'
+    case 'WARD': return 'bg-emerald-600'
     case 'RECOVERY_2': return 'bg-teal-500'
-    case 'ADMITTED': return 'bg-sky-500'
+    case 'DISCHARGED': return 'bg-gray-500'
+    case 'CANCELLED': return 'bg-gray-700'
     default: return 'bg-gray-400'
   }
 }
@@ -162,7 +157,7 @@ export default function DaySummaryPage() {
   const maxCasesInHour = Math.max(...Object.values(casesPerHour), 1)
   const totalCases = dayAdmissions.length
   const completedCases = statusCounts['DISCHARGED'] || 0
-  const inProgressCases = (statusCounts['IN_THEATRE'] || 0) + (statusCounts['RECOVERY_1'] || 0) + (statusCounts['RECOVERY_2'] || 0) + (statusCounts['ADMITTED'] || 0)
+  const inProgressCases = (statusCounts['ARRIVED'] || 0) + (statusCounts['CHECKED_IN'] || 0) + (statusCounts['ANAESTHESIA_INDUCTION'] || 0) + (statusCounts['OPERATION_STARTED'] || 0) + (statusCounts['RECOVERY_1'] || 0) + (statusCounts['WARD'] || 0) + (statusCounts['RECOVERY_2'] || 0)
   const cancelledCount = statusCounts['CANCELLED'] || 0
 
   return (

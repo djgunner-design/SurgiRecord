@@ -33,22 +33,19 @@ export function formatDateTime(date: Date | string): string {
 
 export function getStatusColor(status: string): string {
   switch (status) {
-    case 'DISCHARGED': return 'bg-green-100 border-green-300'
+    case 'PRE_ADMITTED': return 'bg-purple-100 border-purple-300'
     case 'BOOKED': return 'bg-blue-100 border-blue-300'
-    case 'CANCELLED': return 'bg-red-100 border-red-300'
-    case 'IN_THEATRE': return 'bg-yellow-100 border-yellow-300'
-    case 'RECOVERY_1': return 'bg-emerald-50 border-emerald-200'
-    case 'RECOVERY_2': return 'bg-emerald-100 border-emerald-300'
-    case 'ADMITTED': return 'bg-sky-50 border-sky-200'
+    case 'ARRIVED': return 'bg-yellow-100 border-yellow-300'
+    case 'CHECKED_IN': return 'bg-orange-100 border-orange-300'
+    case 'ANAESTHESIA_INDUCTION': return 'bg-pink-100 border-pink-300'
+    case 'OPERATION_STARTED': return 'bg-red-100 border-red-300'
+    case 'RECOVERY_1': return 'bg-green-100 border-green-300'
+    case 'WARD': return 'bg-emerald-100 border-emerald-300'
+    case 'RECOVERY_2': return 'bg-teal-100 border-teal-300'
+    case 'DISCHARGED': return 'bg-gray-100 border-gray-300'
+    case 'CANCELLED': return 'bg-gray-200 border-gray-400'
     default: return 'bg-gray-50 border-gray-200'
   }
 }
 
-export function getStatusLabel(status: string): string {
-  switch (status) {
-    case 'RECOVERY_1': return 'Recovery Stage 1'
-    case 'RECOVERY_2': return 'Recovery Stage 2'
-    case 'IN_THEATRE': return 'In Theatre'
-    default: return status.charAt(0) + status.slice(1).toLowerCase()
-  }
-}
+export { getStatusLabel } from '@/lib/sample-data'
