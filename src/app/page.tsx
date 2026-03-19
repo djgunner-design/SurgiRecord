@@ -56,14 +56,22 @@ export default function LoginPage() {
   }
 
   // Auto-submit when 4 digits entered
-  if (pin.length === 4 && selectedUser) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const pinToCheck = pin.length === 4 ? pin : null
+
+  // Use effect for auto-login to avoid setState during render
+  const [autoLoginAttempted, setAutoLoginAttempted] = useState('')
+  if (pinToCheck && selectedUser && pinToCheck !== autoLoginAttempted) {
     const user = users.find(u => u.id === selectedUser)
-    if (user && user.pin === pin) {
-      document.cookie = `userId=${user.id}; path=/`
-      document.cookie = `userName=${user.name}; path=/`
-      document.cookie = `userInitials=${user.initials}; path=/`
-      router.push('/dashboard')
+    if (user && user.pin === pinToCheck) {
+      setTimeout(() => {
+        document.cookie = `userId=${user.id}; path=/`
+        document.cookie = `userName=${user.name}; path=/`
+        document.cookie = `userInitials=${user.initials}; path=/`
+        router.push('/dashboard')
+      }, 0)
     }
+    setAutoLoginAttempted(pinToCheck)
   }
 
   return (
