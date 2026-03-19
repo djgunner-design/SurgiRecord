@@ -122,6 +122,8 @@ model Admission {
   discharge          Discharge?
   events             Event[]
   nursingAdmission   NursingAdmission?
+  photos             Photo[]
+  documents          Document[]
 }
 
 model Observation {
@@ -290,4 +292,37 @@ model NursingAdmission {
   finalized   Boolean @default(false)
 
   admission Admission @relation(fields: [admissionId], references: [id])
+}
+
+model Photo {
+  id          String   @id @default(cuid())
+  admissionId String
+  admission   Admission @relation(fields: [admissionId], references: [id])
+  fileName    String
+  filePath    String   // future: S3/blob storage path
+  mimeType    String
+  fileSize    Int
+  label       String   @default("")
+  category    String   @default("other")
+  uploadedBy  String
+  createdAt   DateTime @default(now())
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  admissionId String
+  admission   Admission @relation(fields: [admissionId], references: [id])
+  type        String
+  title       String
+  fileName    String?
+  filePath    String?  // future: S3/blob storage path
+  mimeType    String?
+  fileSize    Int?
+  content     String?  // text content
+  status      String   @default("pending")
+  createdBy   String
+  signedBy    String?
+  signedAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

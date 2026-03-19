@@ -579,6 +579,147 @@ export function incrementReturnToTheatre(admissionId: string): number {
   return store[admissionId]
 }
 
+// Photos & Documents
+const PHOTOS_KEY = 'surgirecord_photos'
+const DOCUMENTS_KEY = 'surgirecord_documents'
+
+export interface StoredPhoto {
+  id: string
+  admissionId: string
+  dataUrl: string // base64 data URL
+  label: string
+  category: string // 'implant-scan' | 'implant-sticker' | 'pre-op' | 'post-op' | 'consent-form' | 'pathology' | 'other'
+  timestamp: string
+  uploadedBy: string
+  fileName?: string
+  fileSize?: number
+  mimeType?: string
+}
+
+export interface StoredDocument {
+  id: string
+  admissionId: string
+  type: string // 'consent' | 'report' | 'referral' | 'pathology' | 'imaging' | 'other'
+  title: string
+  dataUrl?: string // base64 for uploaded files
+  content?: string // text content for generated reports
+  status: 'draft' | 'signed' | 'pending' | 'declined'
+  createdAt: string
+  updatedAt: string
+  createdBy: string
+  signedBy?: string
+  signedAt?: string
+  fileName?: string
+  fileSize?: number
+}
+
+function getPhotosStore(): StoredPhoto[] {
+  if (typeof window === 'undefined') return []
+  const data = localStorage.getItem(PHOTOS_KEY)
+  return data ? JSON.parse(data) : []
+}
+
+function savePhotosStore(photos: StoredPhoto[]) {
+  if (typeof window === 'undefined') return
+  const json = JSON.stringify(photos)
+  checkStorageLimit(json.length)
+  localStorage.setItem(PHOTOS_KEY, json)
+}
+
+function getDocumentsStore(): StoredDocument[] {
+  if (typeof window === 'undefined') return []
+  const data = localStorage.getItem(DOCUMENTS_KEY)
+  return data ? JSON.parse(data) : []
+}
+
+function saveDocumentsStore(docs: StoredDocument[]) {
+  if (typeof window === 'undefined') return
+  const json = JSON.stringify(docs)
+  checkStorageLimit(json.length)
+  localStorage.setItem(DOCUMENTS_KEY, json)
+}
+
+function checkStorageLimit(newDataBytes: number) {
+  if (typeof window === 'undefined') return
+  let totalSize = 0
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key) {
+      totalSize += (localStorage.getItem(key) || '').length * 2 // UTF-16
+    }
+  }
+  totalSize += newDataBytes * 2
+  const totalMB = totalSize / (1024 * 1024)
+  if (totalMB > 4.5) {
+    console.warn(`[SurgiRecord] localStorage usage high: ${totalMB.toFixed(2)} MB / ~5 MB limit`)
+  }
+  if (totalMB > 4.9) {
+    throw new Error('Storage limit nearly reached. Please delete some photos or documents before adding more.')
+  }
+}
+
+export function addPhoto(photo: Omit<StoredPhoto, 'id'>): StoredPhoto {
+  const photos = getPhotosStore()
+  const newPhoto: StoredPhoto = { ...photo, id: generateId() }
+  photos.push(newPhoto)
+  savePhotosStore(photos)
+  addAuditEntry({ userId: photo.uploadedBy, action: 'ADD_PHOTO', details: `Added photo "${photo.label}" for admission ${photo.admissionId}`, admissionId: photo.admissionId })
+  return newPhoto
+}
+
+export function getPhotos(admissionId: string): StoredPhoto[] {
+  return getPhotosStore().filter(p => p.admissionId === admissionId)
+}
+
+export function deletePhoto(photoId: string): void {
+  const photos = getPhotosStore().filter(p => p.id !== photoId)
+  savePhotosStore(photos)
+}
+
+export function addDocument(doc: Omit<StoredDocument, 'id'>): StoredDocument {
+  const docs = getDocumentsStore()
+  const newDoc: StoredDocument = { ...doc, id: generateId() }
+  docs.push(newDoc)
+  saveDocumentsStore(docs)
+  addAuditEntry({ userId: doc.createdBy, action: 'ADD_DOCUMENT', details: `Added document "${doc.title}" for admission ${doc.admissionId}`, admissionId: doc.admissionId })
+  return newDoc
+}
+
+export function getDocuments(admissionId: string): StoredDocument[] {
+  return getDocumentsStore().filter(d => d.admissionId === admissionId)
+}
+
+export function updateDocument(docId: string, updates: Partial<StoredDocument>): void {
+  const docs = getDocumentsStore()
+  const idx = docs.findIndex(d => d.id === docId)
+  if (idx === -1) return
+  docs[idx] = { ...docs[idx], ...updates, updatedAt: new Date().toISOString() }
+  saveDocumentsStore(docs)
+}
+
+export function deleteDocument(docId: string): void {
+  const docs = getDocumentsStore().filter(d => d.id !== docId)
+  saveDocumentsStore(docs)
+}
+
+export function getStorageUsage(): { photos: number; documents: number; totalMB: number } {
+  if (typeof window === 'undefined') return { photos: 0, documents: 0, totalMB: 0 }
+  const photosData = localStorage.getItem(PHOTOS_KEY) || ''
+  const docsData = localStorage.getItem(DOCUMENTS_KEY) || ''
+  let totalSize = 0
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key) {
+      totalSize += (localStorage.getItem(key) || '').length * 2
+    }
+  }
+  return {
+    photos: (photosData.length * 2) / (1024 * 1024),
+    documents: (docsData.length * 2) / (1024 * 1024),
+    totalMB: totalSize / (1024 * 1024),
+  }
+}
+
 // Falls Risk / Pressure Risk
 const RISK_SCORES_KEY = 'surgirecord_risk_scores'
 
