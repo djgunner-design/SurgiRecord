@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Settings } from 'lucide-react'
 import { getObservationsForAdmission, findUser } from '@/lib/sample-data'
+import { addObservation, getStoredObservations } from '@/lib/store'
 import {
   LineChart,
   Line,
@@ -20,10 +21,39 @@ export default function ObservationsPage() {
   const params = useParams()
   const router = useRouter()
   const admissionId = params.admissionId as string
-  const observations = getObservationsForAdmission(admissionId)
   const [showForm, setShowForm] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const formRef = useRef<HTMLFormElement>(null)
 
-  const chartData = observations.map(obs => ({
+  const getUserId = useCallback(() => {
+    return document.cookie.split('; ').find(c => c.startsWith('userId='))?.split('=')[1] || '1'
+  }, [])
+
+  // Combine sample observations with stored observations
+  const sampleObs = getObservationsForAdmission(admissionId).map(obs => ({
+    id: obs.id,
+    admissionId: obs.admissionId,
+    time: obs.time instanceof Date ? obs.time.toISOString() : String(obs.time),
+    rr: obs.rr,
+    spo2: obs.spo2,
+    hr: obs.hr,
+    bpSystolic: obs.bpSystolic,
+    bpDiastolic: obs.bpDiastolic,
+    temp: obs.temp,
+    userId: obs.userId,
+    isSample: true,
+  }))
+
+  const storedObs = getStoredObservations(admissionId).map(obs => ({
+    ...obs,
+    isSample: false,
+  }))
+
+  const allObservations = [...sampleObs, ...storedObs].sort(
+    (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()
+  )
+
+  const chartData = allObservations.map(obs => ({
     time: new Date(obs.time).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }),
     rr: obs.rr,
     spo2: obs.spo2,
@@ -32,6 +62,46 @@ export default function ObservationsPage() {
     bpDiastolic: obs.bpDiastolic,
     temp: obs.temp,
   }))
+
+  const handleSaveObservation = () => {
+    if (!formRef.current) return
+    const form = formRef.current
+    const dateVal = (form.elements.namedItem('obsDate') as HTMLInputElement).value
+    const timeVal = (form.elements.namedItem('obsTime') as HTMLInputElement).value
+    const rr = (form.elements.namedItem('obsRr') as HTMLInputElement).value
+    const spo2 = (form.elements.namedItem('obsSpo2') as HTMLInputElement).value
+    const hr = (form.elements.namedItem('obsHr') as HTMLInputElement).value
+    const bpSystolic = (form.elements.namedItem('obsBpSystolic') as HTMLInputElement).value
+    const bpDiastolic = (form.elements.namedItem('obsBpDiastolic') as HTMLInputElement).value
+    const temp = (form.elements.namedItem('obsTemp') as HTMLInputElement).value
+    const painScore = (form.elements.namedItem('obsPainScore') as HTMLInputElement).value
+    const respDistress = (form.elements.namedItem('obsRespDistress') as HTMLSelectElement).value
+    const comments = (form.elements.namedItem('obsComments') as HTMLTextAreaElement).value
+
+    const obsTime = new Date(`${dateVal}T${timeVal}:00`).toISOString()
+    const userId = getUserId()
+
+    addObservation({
+      admissionId,
+      time: obsTime,
+      rr: rr ? Number(rr) : null,
+      spo2: spo2 ? Number(spo2) : null,
+      hr: hr ? Number(hr) : null,
+      bpSystolic: bpSystolic ? Number(bpSystolic) : null,
+      bpDiastolic: bpDiastolic ? Number(bpDiastolic) : null,
+      temp: temp ? Number(temp) : null,
+      painScore: painScore ? Number(painScore) : null,
+      respDistress: respDistress || '',
+      comments: comments || '',
+      userId,
+    })
+
+    form.reset()
+    // Re-set default date/time after reset
+    ;(form.elements.namedItem('obsDate') as HTMLInputElement).value = new Date().toISOString().split('T')[0]
+    ;(form.elements.namedItem('obsTime') as HTMLInputElement).value = new Date().toTimeString().slice(0, 5)
+    setRefreshKey(k => k + 1)
+  }
 
   return (
     <div className="space-y-6">
@@ -159,22 +229,22 @@ export default function ObservationsPage() {
           {/* New Observation Form */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">New Observation</h3>
-            <div className="space-y-3">
+            <form ref={formRef} className="space-y-3" onSubmit={(e) => e.preventDefault()}>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Date</label>
-                <input type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="obsDate" type="date" defaultValue={new Date().toISOString().split('T')[0]} className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Time</label>
-                <input type="time" defaultValue={new Date().toTimeString().slice(0,5)} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="obsTime" type="time" defaultValue={new Date().toTimeString().slice(0,5)} className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">RR</label>
-                <input type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="breaths/min" />
+                <input name="obsRr" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="breaths/min" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Resp Distress</label>
-                <select className="w-full px-3 py-2 border rounded-lg text-sm">
+                <select name="obsRespDistress" className="w-full px-3 py-2 border rounded-lg text-sm">
                   <option value="">Select...</option>
                   <option>None</option>
                   <option>Mild</option>
@@ -184,7 +254,7 @@ export default function ObservationsPage() {
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">SpO2</label>
-                <input type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="%" />
+                <input name="obsSpo2" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="%" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">O2 L/min</label>
@@ -192,32 +262,36 @@ export default function ObservationsPage() {
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Heart Rate</label>
-                <input type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="bpm" />
+                <input name="obsHr" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="bpm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">BP Systolic</label>
-                <input type="number" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="obsBpSystolic" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">BP Diastolic</label>
-                <input type="number" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="obsBpDiastolic" type="number" className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Temperature</label>
-                <input type="number" step="0.1" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="°C" />
+                <input name="obsTemp" type="number" step="0.1" className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="°C" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Pain Score (0-10)</label>
-                <input type="number" min="0" max="10" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                <input name="obsPainScore" type="number" min="0" max="10" className="w-full px-3 py-2 border rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Comments</label>
-                <textarea className="w-full px-3 py-2 border rounded-lg text-sm" rows={3} />
+                <textarea name="obsComments" className="w-full px-3 py-2 border rounded-lg text-sm" rows={3} />
               </div>
-              <button className="w-full py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 font-medium">
+              <button
+                type="button"
+                onClick={handleSaveObservation}
+                className="w-full py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 font-medium"
+              >
                 Save Observation
               </button>
-            </div>
+            </form>
 
             <h3 className="text-sm font-semibold text-gray-700 border-b pb-2 pt-4">Wound Assessment</h3>
             <div className="space-y-3">
@@ -260,7 +334,7 @@ export default function ObservationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {observations.map(obs => {
+                {allObservations.map(obs => {
                   const user = findUser(obs.userId)
                   return (
                     <tr key={obs.id} className="border-b border-gray-50 hover:bg-gray-50">

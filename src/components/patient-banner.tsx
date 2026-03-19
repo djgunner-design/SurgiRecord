@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Printer, FileText, AlertTriangle, Heart, Shield, Pill } from 'lucide-react'
+import ComorbiditiesModal from './comorbidities-modal'
+import RiskFactorsModal from './risk-factors-modal'
 
 interface PatientBannerProps {
   admission: {
@@ -76,46 +78,49 @@ function calculateAge(dob: Date): string {
 
 export default function PatientBanner({ admission, patient, surgeonName }: PatientBannerProps) {
   const router = useRouter()
+  const [showComorbidities, setShowComorbidities] = useState(false)
+  const [showRiskFactors, setShowRiskFactors] = useState(false)
   const bmi = calculateBMI(patient.weight, patient.height)
   const age = calculateAge(new Date(patient.dob))
   const status = getStatusBadge(admission.status)
+  const patientFullName = `${patient.lastName} ${patient.firstName} ${patient.title || ''}`.trim()
 
   return (
-    <div className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="px-6 py-4">
-        <div className="grid grid-cols-12 gap-6">
+    <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shadow-sm">
+      <div className="px-4 sm:px-6 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           {/* Left: Patient Info */}
-          <div className="col-span-4">
+          <div className="lg:col-span-4">
             <div className="flex items-start gap-4">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0 ${
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold flex-shrink-0 ${
                 patient.sex === 'Female' ? 'bg-pink-100 text-pink-600' : 'bg-blue-100 text-blue-600'
               }`}>
-                {patient.sex === 'Female' ? '♀' : '♂'}
+                {patient.sex === 'Female' ? '\u2640' : '\u2642'}
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">MRN: {patient.mrn}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">MRN: {patient.mrn}</span>
                 </div>
-                <h2 className="text-lg font-bold text-gray-900">
+                <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white truncate">
                   {patient.lastName} {patient.firstName} {patient.title}
                 </h2>
-                <div className="text-sm text-gray-600 mt-1">
+                <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   <span>DOB: {new Date(patient.dob).toLocaleDateString('en-AU')} ({age})</span>
                   <span className="ml-3">Sex: <strong>{patient.sex}</strong></span>
                 </div>
-                <div className="text-sm text-gray-600 mt-1 flex gap-4">
+                <div className="text-sm text-gray-600 dark:text-gray-300 mt-1 flex flex-wrap gap-2 sm:gap-4">
                   {patient.weight && <span>Weight: {patient.weight}kg</span>}
                   {patient.height && <span>Height: {patient.height}cm</span>}
-                  {bmi && <span className="text-cyan-600 font-medium">BMI: {bmi}</span>}
+                  {bmi && <span className="text-cyan-600 dark:text-cyan-400 font-medium">BMI: {bmi}</span>}
                 </div>
                 {patient.atsiStatus && (
-                  <div className="text-xs text-gray-500 mt-1">A&TSI: {patient.atsiStatus}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">A&TSI: {patient.atsiStatus}</div>
                 )}
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-white mt-2 ${status.color}`}>
                   {status.label}
                 </div>
                 {patient.address && (
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                     {patient.address}, {patient.suburb}, {patient.state} {patient.postcode}
                   </div>
                 )}
@@ -124,19 +129,19 @@ export default function PatientBanner({ admission, patient, surgeonName }: Patie
           </div>
 
           {/* Middle: Operation Info */}
-          <div className="col-span-4">
+          <div className="lg:col-span-4">
             <div className="space-y-2">
               {admission.covidStatus && (
-                <div className="text-xs text-gray-500">Covid status: {admission.covidStatus}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Covid status: {admission.covidStatus}</div>
               )}
               {surgeonName && (
-                <div className="text-sm font-medium text-cyan-700">Surgeon: {surgeonName}</div>
+                <div className="text-sm font-medium text-cyan-700 dark:text-cyan-400">Surgeon: {surgeonName}</div>
               )}
               <div>
-                <div className="text-xs text-gray-500">Operation/notes:</div>
-                <div className="text-sm font-medium text-gray-800 mt-0.5">{admission.operationNotes}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Operation/notes:</div>
+                <div className="text-sm font-medium text-gray-800 dark:text-gray-200 mt-0.5">{admission.operationNotes}</div>
               </div>
-              <div className="flex gap-6 text-xs text-gray-500">
+              <div className="flex flex-wrap gap-4 text-xs text-gray-500 dark:text-gray-400">
                 {admission.lastFood && (
                   <span>Last food: {new Date(admission.lastFood).toLocaleString('en-AU', { dateStyle: 'short', timeStyle: 'short' })}</span>
                 )}
@@ -148,28 +153,35 @@ export default function PatientBanner({ admission, patient, surgeonName }: Patie
           </div>
 
           {/* Right: Alerts & Quick Info */}
-          <div className="col-span-4">
+          <div className="lg:col-span-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-4 text-sm">
-                <button className="text-cyan-600 hover:text-cyan-800 font-medium flex items-center gap-1">
+              <div className="flex items-center gap-4 text-sm flex-wrap">
+                <button onClick={() => setShowComorbidities(true)} className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 font-medium flex items-center gap-1">
                   <Heart className="w-4 h-4" /> Comorbidities
                 </button>
-                <button className="text-cyan-600 hover:text-cyan-800 font-medium flex items-center gap-1">
+                <button onClick={() => setShowRiskFactors(true)} className="text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 font-medium flex items-center gap-1">
                   <Shield className="w-4 h-4" /> Risk Factors
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="text-gray-500 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 font-medium flex items-center gap-1 no-print"
+                  title="Print"
+                >
+                  <Printer className="w-4 h-4" /> Print
                 </button>
               </div>
               <div className="text-sm">
-                <span className="text-gray-500">Alerts:</span>
+                <span className="text-gray-500 dark:text-gray-400">Alerts:</span>
               </div>
               <div className="text-sm flex items-center gap-2">
                 <Pill className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Allergies:</span>
-                <span className={patient.allergies?.includes('NIL') || !patient.allergies ? 'text-green-600' : 'text-red-600 font-medium'}>
+                <span className="text-gray-600 dark:text-gray-300">Allergies:</span>
+                <span className={patient.allergies?.includes('NIL') || !patient.allergies ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400 font-medium'}>
                   {patient.allergies || 'No Allergies (NIL)'}
                 </span>
               </div>
               {admission.procedureStartTime && (
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-300">
                   Procedure start time: <strong>{admission.procedureStartTime}</strong>
                 </div>
               )}
@@ -177,6 +189,19 @@ export default function PatientBanner({ admission, patient, surgeonName }: Patie
           </div>
         </div>
       </div>
+
+      <ComorbiditiesModal
+        isOpen={showComorbidities}
+        onClose={() => setShowComorbidities(false)}
+        patientName={patientFullName}
+        initialComorbidities={patient.comorbidities}
+      />
+      <RiskFactorsModal
+        isOpen={showRiskFactors}
+        onClose={() => setShowRiskFactors(false)}
+        patientName={patientFullName}
+        allergies={patient.allergies}
+      />
     </div>
   )
 }

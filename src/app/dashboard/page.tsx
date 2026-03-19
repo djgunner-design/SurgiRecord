@@ -2,19 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Home, Settings, RefreshCw, Search, Calendar, LogOut, Menu } from 'lucide-react'
+import { Home, Settings, RefreshCw, Search, Calendar, LogOut, Menu, Moon, Sun, Globe, Printer, ChevronDown } from 'lucide-react'
 import { sampleAdmissions, samplePatients, sampleUsers, findUser, findPatient } from '@/lib/sample-data'
+import { getAdmissionStatus, updateAdmissionStatus } from '@/lib/store'
 
 function getStatusColor(status: string): string {
   switch (status) {
-    case 'DISCHARGED': return 'bg-green-50 border-l-4 border-l-green-500'
-    case 'BOOKED': return 'bg-blue-50 border-l-4 border-l-blue-500'
-    case 'CANCELLED': return 'bg-red-50 border-l-4 border-l-red-500'
-    case 'IN_THEATRE': return 'bg-yellow-50 border-l-4 border-l-yellow-500'
-    case 'RECOVERY_1': return 'bg-emerald-50 border-l-4 border-l-emerald-400'
-    case 'RECOVERY_2': return 'bg-teal-50 border-l-4 border-l-teal-500'
-    case 'ADMITTED': return 'bg-sky-50 border-l-4 border-l-sky-500'
-    default: return 'bg-gray-50 border-l-4 border-l-gray-300'
+    case 'DISCHARGED': return 'bg-green-50 border-l-4 border-l-green-500 dark:bg-green-950/30'
+    case 'BOOKED': return 'bg-blue-50 border-l-4 border-l-blue-500 dark:bg-blue-950/30'
+    case 'CANCELLED': return 'bg-red-50 border-l-4 border-l-red-500 dark:bg-red-950/30'
+    case 'IN_THEATRE': return 'bg-yellow-50 border-l-4 border-l-yellow-500 dark:bg-yellow-950/30'
+    case 'RECOVERY_1': return 'bg-emerald-50 border-l-4 border-l-emerald-400 dark:bg-emerald-950/30'
+    case 'RECOVERY_2': return 'bg-teal-50 border-l-4 border-l-teal-500 dark:bg-teal-950/30'
+    case 'ADMITTED': return 'bg-sky-50 border-l-4 border-l-sky-500 dark:bg-sky-950/30'
+    default: return 'bg-gray-50 border-l-4 border-l-gray-300 dark:bg-gray-800/30'
   }
 }
 
@@ -29,14 +30,14 @@ function getStatusLabel(status: string): string {
 
 function getStatusBadgeColor(status: string): string {
   switch (status) {
-    case 'DISCHARGED': return 'bg-green-100 text-green-800'
-    case 'BOOKED': return 'bg-blue-100 text-blue-800'
-    case 'CANCELLED': return 'bg-red-100 text-red-800'
-    case 'IN_THEATRE': return 'bg-yellow-100 text-yellow-800'
-    case 'RECOVERY_1': return 'bg-emerald-100 text-emerald-800'
-    case 'RECOVERY_2': return 'bg-teal-100 text-teal-800'
-    case 'ADMITTED': return 'bg-sky-100 text-sky-800'
-    default: return 'bg-gray-100 text-gray-800'
+    case 'DISCHARGED': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+    case 'BOOKED': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+    case 'CANCELLED': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+    case 'IN_THEATRE': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+    case 'RECOVERY_1': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+    case 'RECOVERY_2': return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200'
+    case 'ADMITTED': return 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200'
+    default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
   }
 }
 
@@ -47,17 +48,41 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState('Any')
   const [locationFilter, setLocationFilter] = useState('Any')
   const [userName, setUserName] = useState('')
+  const [darkMode, setDarkMode] = useState(false)
+  const [globalSearch, setGlobalSearch] = useState(false)
+  const [editingStatusId, setEditingStatusId] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     const name = document.cookie.split('; ').find(c => c.startsWith('userName='))?.split('=')[1]
     if (name) setUserName(decodeURIComponent(name))
     else router.push('/')
+
+    // Initialize dark mode state from DOM
+    setDarkMode(document.documentElement.classList.contains('dark'))
   }, [router])
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode
+    setDarkMode(newMode)
+    if (newMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+    }
+  }
+
+  const getEffectiveStatusFn = (admission: typeof sampleAdmissions[0]) => {
+    return getAdmissionStatus(admission.id) || admission.status
+  }
 
   const admissions = sampleAdmissions.filter(a => {
     const admDate = a.date.toISOString().split('T')[0]
-    if (admDate !== date) return false
-    if (statusFilter !== 'Any' && a.status !== statusFilter) return false
+    if (!globalSearch && admDate !== date) return false
+    const effectiveStatus = getEffectiveStatusFn(a)
+    if (statusFilter !== 'Any' && effectiveStatus !== statusFilter) return false
     if (locationFilter !== 'Any' && a.location !== locationFilter) return false
 
     if (searchTerm) {
@@ -83,31 +108,48 @@ export default function DashboardPage() {
     router.push('/')
   }
 
+  const getUserId = () => {
+    return document.cookie.split('; ').find(c => c.startsWith('userId='))?.split('=')[1] || '1'
+  }
+
+  const handleStatusChange = (admissionId: string, newStatus: string) => {
+    const userId = getUserId()
+    updateAdmissionStatus(admissionId, newStatus, userId)
+    setEditingStatusId(null)
+    setRefreshKey(k => k + 1)
+  }
+
   return (
-    <div className="min-h-screen bg-[#f0f4f8]">
+    <div className="min-h-screen bg-[#f0f4f8] dark:bg-slate-900">
       {/* Top Navigation */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="flex items-center justify-between px-6 py-3">
+      <header className="bg-white dark:bg-slate-800 shadow-sm border-b border-gray-200 dark:border-slate-700 no-print">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-cyan-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">SR</span>
             </div>
-            <span className="text-lg font-semibold text-gray-800">SurgiRecord</span>
+            <span className="text-lg font-semibold text-gray-800 dark:text-white hidden sm:inline">SurgiRecord</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="p-2 text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button className="p-2 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
               <Home className="w-5 h-5" />
             </button>
-            <button className="p-2 text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors">
+            <button className="p-2 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
               <Settings className="w-5 h-5" />
             </button>
-            <button onClick={() => window.location.reload()} className="p-2 text-gray-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors">
+            <button onClick={toggleDarkMode} className="p-2 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-slate-700 rounded-lg transition-colors" title="Toggle dark mode">
+              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button onClick={() => window.print()} className="p-2 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-slate-700 rounded-lg transition-colors" title="Print">
+              <Printer className="w-5 h-5" />
+            </button>
+            <button onClick={() => window.location.reload()} className="p-2 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-slate-700 rounded-lg transition-colors">
               <RefreshCw className="w-5 h-5" />
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">{userName}</span>
-            <button onClick={handleLogout} className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            <span className="text-sm text-gray-600 dark:text-gray-300 hidden sm:inline">{userName}</span>
+            <button onClick={handleLogout} className="p-2 text-gray-600 dark:text-gray-300 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
@@ -115,25 +157,41 @@ export default function DashboardPage() {
       </header>
 
       {/* Content */}
-      <main className="p-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <main className="p-4 sm:p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
           {/* Filters */}
-          <div className="p-6 border-b border-gray-100">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
-              Patient List for {new Date(date + 'T00:00:00').toLocaleDateString('en-AU', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-slate-700">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+                {globalSearch
+                  ? 'Patient List - All Dates'
+                  : `Patient List for ${new Date(date + 'T00:00:00').toLocaleDateString('en-AU', { day: '2-digit', month: '2-digit', year: 'numeric' })}`}
+              </h2>
+              <button
+                onClick={() => setGlobalSearch(!globalSearch)}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  globalSearch
+                    ? 'bg-cyan-600 text-white hover:bg-cyan-700'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                Global Search
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Admission Date</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Admission Date</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                  disabled={globalSearch}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 dark:bg-slate-700 dark:text-white disabled:opacity-50"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Patient Search</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Patient Search</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
@@ -141,24 +199,24 @@ export default function DashboardPage() {
                     placeholder="Search by name or MRN..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                    className="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 dark:bg-slate-700 dark:text-white"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Location</label>
                 <select
                   value={locationFilter}
                   onChange={(e) => setLocationFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 dark:bg-slate-700 dark:text-white"
                 >
                   <option>Any</option>
                   {locations.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Anaesthetist</label>
-                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Anaesthetist</label>
+                <select className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 dark:bg-slate-700 dark:text-white">
                   <option>Any</option>
                   {sampleUsers.filter(u => u.role === 'ANAESTHETIST').map(u => (
                     <option key={u.id} value={u.id}>{u.name}</option>
@@ -166,11 +224,11 @@ export default function DashboardPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 dark:bg-slate-700 dark:text-white"
                 >
                   {statuses.map(s => <option key={s} value={s}>{s === 'Any' ? 'Any Status' : getStatusLabel(s)}</option>)}
                 </select>
@@ -186,8 +244,8 @@ export default function DashboardPage() {
                   <th className="px-4 py-3 text-left font-medium w-12"></th>
                   <th className="px-4 py-3 text-left font-medium">PATIENT</th>
                   <th className="px-4 py-3 text-left font-medium">STATUS</th>
-                  <th className="px-4 py-3 text-left font-medium">OPERATION NOTES</th>
-                  <th className="px-4 py-3 text-left font-medium">LOCATION</th>
+                  <th className="px-4 py-3 text-left font-medium hidden md:table-cell">OPERATION NOTES</th>
+                  <th className="px-4 py-3 text-left font-medium hidden sm:table-cell">LOCATION</th>
                   <th className="px-4 py-3 text-right font-medium">DOCTOR</th>
                 </tr>
               </thead>
@@ -196,54 +254,74 @@ export default function DashboardPage() {
                   const patient = findPatient(admission.patientId)
                   const surgeon = admission.surgeonId ? findUser(admission.surgeonId) : null
                   if (!patient) return null
+                  const effectiveStatus = getEffectiveStatusFn(admission)
 
                   return (
                     <tr
                       key={admission.id}
                       onClick={() => router.push(`/patients/${admission.id}`)}
-                      className={`cursor-pointer hover:brightness-95 transition-all border-b border-gray-100 ${getStatusColor(admission.status)}`}
+                      className={`cursor-pointer hover:brightness-95 dark:hover:brightness-125 transition-all border-b border-gray-100 dark:border-slate-700 ${getStatusColor(effectiveStatus)}`}
                     >
                       <td className="px-4 py-4">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
                           patient.sex === 'Female' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'
                         }`}>
-                          {patient.sex === 'Female' ? '♀' : '♂'}
+                          {patient.sex === 'Female' ? '\u2640' : '\u2642'}
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="font-semibold text-gray-900">
+                        <div className="font-semibold text-gray-900 dark:text-white">
                           {patient.mrn} - {patient.lastName} {patient.firstName} {patient.title}
                         </div>
-                        <div className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
+                        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
                           <span className={patient.sex === 'Female' ? 'text-pink-500' : 'text-blue-500'}>
-                            {patient.sex === 'Female' ? '♀' : '♂'}
+                            {patient.sex === 'Female' ? '\u2640' : '\u2642'}
                           </span>
                           {patient.dob.toISOString().split('T')[0]}
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(admission.status)}`}>
-                          {getStatusLabel(admission.status)}
-                        </span>
+                        {editingStatusId === admission.id ? (
+                          <select
+                            autoFocus
+                            defaultValue={effectiveStatus}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => handleStatusChange(admission.id, e.target.value)}
+                            onBlur={() => setEditingStatusId(null)}
+                            className="px-2 py-1 border border-gray-300 dark:border-slate-600 rounded-lg text-xs focus:ring-2 focus:ring-cyan-500 dark:bg-slate-700 dark:text-white"
+                          >
+                            {statuses.filter(s => s !== 'Any').map(s => (
+                              <option key={s} value={s}>{getStatusLabel(s)}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setEditingStatusId(admission.id) }}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(effectiveStatus)} hover:opacity-80 transition-opacity`}
+                          >
+                            {getStatusLabel(effectiveStatus)}
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+                        )}
                       </td>
-                      <td className="px-4 py-4">
-                        <div className="text-sm text-gray-700 max-w-md truncate">
+                      <td className="px-4 py-4 hidden md:table-cell">
+                        <div className="text-sm text-gray-700 dark:text-gray-300 max-w-md truncate">
                           {admission.operationNotes}
                         </div>
                       </td>
-                      <td className="px-4 py-4">
-                        <span className="text-sm text-gray-600">{admission.location}</span>
+                      <td className="px-4 py-4 hidden sm:table-cell">
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{admission.location}</span>
                       </td>
                       <td className="px-4 py-4 text-right">
-                        <span className="text-sm font-medium text-gray-700">{surgeon?.initials}</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{surgeon?.initials}</span>
                       </td>
                     </tr>
                   )
                 })}
                 {admissions.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
-                      No patients found for this date
+                    <td colSpan={6} className="px-4 py-12 text-center text-gray-500 dark:text-gray-400">
+                      No patients found {globalSearch ? '' : 'for this date'}
                     </td>
                   </tr>
                 )}

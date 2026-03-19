@@ -1,15 +1,54 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { Plus, Edit, Trash2, Clock } from 'lucide-react'
 import { getNotesForAdmission, findUser } from '@/lib/sample-data'
+import { addNote, getStoredNotes, deleteNote } from '@/lib/store'
 
 export default function NotesPage() {
   const params = useParams()
   const admissionId = params.admissionId as string
-  const notes = getNotesForAdmission(admissionId)
   const [newNote, setNewNote] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const getUserId = useCallback(() => {
+    return document.cookie.split('; ').find(c => c.startsWith('userId='))?.split('=')[1] || '1'
+  }, [])
+
+  // Combine sample notes with stored notes
+  const sampleNotes = getNotesForAdmission(admissionId).map(n => ({
+    id: n.id,
+    admissionId: n.admissionId,
+    dateTime: n.dateTime instanceof Date ? n.dateTime.toISOString() : String(n.dateTime),
+    content: n.content,
+    userId: n.userId,
+    isSample: true,
+  }))
+
+  const storedNotes = getStoredNotes(admissionId).map(n => ({
+    ...n,
+    isSample: false,
+  }))
+
+  const allNotes = [...sampleNotes, ...storedNotes].sort(
+    (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime()
+  )
+
+  const handleSaveNote = () => {
+    if (!newNote.trim()) return
+    const userId = getUserId()
+    addNote({ admissionId, content: newNote.trim(), userId })
+    setNewNote('')
+    setRefreshKey(k => k + 1)
+  }
+
+  const handleDeleteNote = (noteId: string, isSample: boolean) => {
+    if (isSample) return // Don't delete sample data
+    const userId = getUserId()
+    deleteNote(noteId, userId)
+    setRefreshKey(k => k + 1)
+  }
 
   return (
     <div className="space-y-6">
@@ -36,7 +75,7 @@ export default function NotesPage() {
               </tr>
             </thead>
             <tbody>
-              {notes.map(note => {
+              {allNotes.map(note => {
                 const user = findUser(note.userId)
                 return (
                   <tr key={note.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -53,7 +92,18 @@ export default function NotesPage() {
                         <button className="p-1.5 text-gray-400 hover:text-cyan-600 rounded transition-colors">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="p-1.5 text-gray-400 hover:text-red-600 rounded transition-colors">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleDeleteNote(note.id, note.isSample)
+                          }}
+                          className={`p-1.5 rounded transition-colors ${
+                            note.isSample
+                              ? 'text-gray-200 cursor-not-allowed'
+                              : 'text-gray-400 hover:text-red-600'
+                          }`}
+                          disabled={note.isSample}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -61,7 +111,7 @@ export default function NotesPage() {
                   </tr>
                 )
               })}
-              {notes.length === 0 && (
+              {allNotes.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-4 py-8 text-center text-gray-400">No notes recorded</td>
                 </tr>
@@ -81,7 +131,11 @@ export default function NotesPage() {
             placeholder="Enter clinical note..."
           />
           <div className="flex justify-end mt-3">
-            <button className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 font-medium">
+            <button
+              onClick={handleSaveNote}
+              disabled={!newNote.trim()}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Save Note
             </button>
           </div>

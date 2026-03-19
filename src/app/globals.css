@@ -13,6 +13,29 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
 }
 
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+}
+
+.dark body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  body { background: white !important; color: black !important; }
+  .bg-gray-700 { background: #374151 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+.print-only { display: none; }
+
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
