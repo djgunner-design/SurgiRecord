@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash2, Save } from 'lucide-react'
 import { findAdmission, findPatient, findUser, getHandoversForAdmission } from '@/lib/sample-data'
+import TemplatePicker from '@/components/template-picker'
 
 export default function HandoverPage() {
   const params = useParams()
@@ -10,6 +12,28 @@ export default function HandoverPage() {
   const admission = findAdmission(admissionId)
   const patient = admission ? findPatient(admission.patientId) : null
   const handovers = getHandoversForAdmission(admissionId)
+
+  const [fields, setFields] = useState<Record<string, string>>({
+    handoverNotes: '',
+    concerns: '',
+    postOpPlan: '',
+  })
+
+  const handleApplyTemplate = useCallback((templateFields: Record<string, string>) => {
+    setFields(prev => ({ ...prev, ...templateFields }))
+  }, [])
+
+  const getCurrentFields = useCallback(() => fields, [fields])
+
+  const fieldLabels: Record<string, string> = {
+    handoverNotes: 'Handover Notes',
+    concerns: 'Concerns',
+    postOpPlan: 'Post-Op Plan',
+  }
+
+  const updateField = (key: string, value: string) => {
+    setFields(prev => ({ ...prev, [key]: value }))
+  }
 
   if (!admission || !patient) return <div>Not found</div>
 
@@ -57,7 +81,7 @@ export default function HandoverPage() {
         </div>
 
         {/* Handover List */}
-        <div>
+        <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Handover List</h3>
             <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
@@ -82,8 +106,8 @@ export default function HandoverPage() {
                   <tr key={h.id} className="border-b border-gray-100 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700">
                     <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 capitalize">{h.stage.toLowerCase().replace('_', ' ')}</td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{fromUser?.initials} ({fromUser?.name})</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{toUser ? `${toUser.initials} (${toUser.name})` : '—'}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{h.time || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{toUser ? `${toUser.initials} (${toUser.name})` : '\u2014'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{h.time || '\u2014'}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button className="p-1.5 text-gray-400 hover:text-cyan-600 rounded"><Edit className="w-4 h-4" /></button>
@@ -95,6 +119,56 @@ export default function HandoverPage() {
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Handover Notes with Templates */}
+        <div className="border-t border-gray-200 dark:border-slate-700 pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Handover Summary</h3>
+            <TemplatePicker
+              category="handover"
+              onApply={handleApplyTemplate}
+              getCurrentFields={getCurrentFields}
+              fieldLabels={fieldLabels}
+            />
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Handover Notes</label>
+              <textarea
+                value={fields.handoverNotes}
+                onChange={e => updateField('handoverNotes', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm"
+                rows={3}
+                placeholder="Summary of patient status, procedure performed, and key events..."
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Concerns / Alerts</label>
+              <textarea
+                value={fields.concerns}
+                onChange={e => updateField('concerns', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm"
+                rows={2}
+                placeholder="Any specific concerns or alerts for the receiving nurse..."
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Post-Op Plan</label>
+              <textarea
+                value={fields.postOpPlan}
+                onChange={e => updateField('postOpPlan', e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm"
+                rows={2}
+                placeholder="Post-operative care plan and instructions..."
+              />
+            </div>
+          </div>
+          <div className="flex justify-end mt-4">
+            <button className="px-6 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 font-medium flex items-center gap-2">
+              <Save className="w-4 h-4" /> Save Handover
+            </button>
+          </div>
         </div>
       </div>
     </div>

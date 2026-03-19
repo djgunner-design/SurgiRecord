@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { Plus, Edit, Trash2, Clock } from 'lucide-react'
 import { getNotesForAdmission, findUser } from '@/lib/sample-data'
 import { addNote, getStoredNotes, deleteNote } from '@/lib/store'
+import TemplatePicker from '@/components/template-picker'
 
 export default function NotesPage() {
   const params = useParams()
@@ -48,6 +49,20 @@ export default function NotesPage() {
     const userId = getUserId()
     deleteNote(noteId, userId)
     setRefreshKey(k => k + 1)
+  }
+
+  const handleApplyTemplate = useCallback((fields: Record<string, string>) => {
+    if (fields.noteContent) {
+      setNewNote(fields.noteContent)
+    }
+  }, [])
+
+  const getCurrentFields = useCallback(() => {
+    return { noteContent: newNote }
+  }, [newNote])
+
+  const fieldLabels: Record<string, string> = {
+    noteContent: 'Note',
   }
 
   return (
@@ -122,7 +137,15 @@ export default function NotesPage() {
 
         {/* New Note Form */}
         <div className="border-t border-gray-200 dark:border-slate-700 pt-6">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Add Note</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add Note</h3>
+            <TemplatePicker
+              category="notes"
+              onApply={handleApplyTemplate}
+              getCurrentFields={getCurrentFields}
+              fieldLabels={fieldLabels}
+            />
+          </div>
           <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}

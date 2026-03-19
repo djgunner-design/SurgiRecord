@@ -2,11 +2,45 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Save, Check } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
+import { findAdmission, findPatient, findUser } from '@/lib/sample-data'
+import PdfExportButton from '@/components/pdf-export-button'
+import TemplatePicker from '@/components/template-picker'
 
 export default function DischargePage() {
   const params = useParams()
   const router = useRouter()
+  const admissionId = params.admissionId as string
+  const admission = findAdmission(admissionId)
+  const patient = admission ? findPatient(admission.patientId) : null
+  const surgeon = admission?.surgeonId ? findUser(admission.surgeonId) : null
+  const anaesthetist = admission?.anaesthetistId ? findUser(admission.anaesthetistId) : null
+
+  const [fields, setFields] = useState<Record<string, string>>({
+    dischargeType: 'Routine Discharge',
+    dischargeNotes: '',
+    postOpInstructions: '',
+    followUp: '',
+    callNotes: '',
+  })
+
+  const handleApplyTemplate = useCallback((templateFields: Record<string, string>) => {
+    setFields(prev => ({ ...prev, ...templateFields }))
+  }, [])
+
+  const getCurrentFields = useCallback(() => fields, [fields])
+
+  const fieldLabels: Record<string, string> = {
+    dischargeType: 'Discharge Type',
+    dischargeNotes: 'Discharge Notes',
+    postOpInstructions: 'Post-Op Instructions',
+    followUp: 'Follow Up',
+    callNotes: 'Call Notes',
+  }
+
+  const updateField = (key: string, value: string) => {
+    setFields(prev => ({ ...prev, [key]: value }))
+  }
 
   return (
     <div className="space-y-6">
@@ -19,6 +53,26 @@ export default function DischargePage() {
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
+          <div className="flex items-center gap-2">
+            <TemplatePicker
+              category="discharge"
+              onApply={handleApplyTemplate}
+              getCurrentFields={getCurrentFields}
+              fieldLabels={fieldLabels}
+            />
+            {patient && admission && (
+              <PdfExportButton
+                type="discharge-summary"
+                patient={{ ...patient, dob: patient.dob }}
+                admission={{
+                  ...admission,
+                  date: admission.date,
+                  surgeonName: surgeon?.name ?? null,
+                  anaesthetistName: anaesthetist?.name ?? null,
+                }}
+              />
+            )}
+          </div>
         </div>
 
         {/* Discharge Checklist */}
@@ -49,7 +103,7 @@ export default function DischargePage() {
             </div>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Discharge Type</label>
-              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm max-w-xs">
+              <select value={fields.dischargeType} onChange={e => updateField('dischargeType', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm max-w-xs">
                 <option>Routine Discharge</option>
                 <option>Discharge Without Escort</option>
                 <option>Transfer to Ward</option>
@@ -59,15 +113,15 @@ export default function DischargePage() {
             </div>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Discharge Notes</label>
-              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={4} placeholder="Additional discharge notes..." />
+              <textarea value={fields.dischargeNotes} onChange={e => updateField('dischargeNotes', e.target.value)} className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={4} placeholder="Additional discharge notes..." />
             </div>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Post-Op Instructions Given</label>
-              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={3} placeholder="Instructions provided to patient..." />
+              <textarea value={fields.postOpInstructions} onChange={e => updateField('postOpInstructions', e.target.value)} className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={3} placeholder="Instructions provided to patient..." />
             </div>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Follow Up</label>
-              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={2} placeholder="Follow-up arrangements..." />
+              <textarea value={fields.followUp} onChange={e => updateField('followUp', e.target.value)} className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={2} placeholder="Follow-up arrangements..." />
             </div>
           </div>
         </div>
@@ -86,7 +140,7 @@ export default function DischargePage() {
             </div>
             <div className="col-span-2">
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Call Notes</label>
-              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={3} placeholder="Details of post-op phone call..." />
+              <textarea value={fields.callNotes} onChange={e => updateField('callNotes', e.target.value)} className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={3} placeholder="Details of post-op phone call..." />
             </div>
           </div>
         </div>

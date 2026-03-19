@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, FileText, Check, Clock, AlertTriangle, Upload, Plus } from 'lucide-react'
+import { findAdmission, findPatient, findUser } from '@/lib/sample-data'
+import PdfExportButton from '@/components/pdf-export-button'
 
 type ConsentRecord = {
   id: string
@@ -16,6 +18,11 @@ type ConsentRecord = {
 export default function ConsentPage() {
   const params = useParams()
   const router = useRouter()
+  const admissionId = params.admissionId as string
+  const admission = findAdmission(admissionId)
+  const patient = admission ? findPatient(admission.patientId) : null
+  const surgeon = admission?.surgeonId ? findUser(admission.surgeonId) : null
+  const anaesthetist = admission?.anaesthetistId ? findUser(admission.anaesthetistId) : null
   const [consents, setConsents] = useState<ConsentRecord[]>([
     { id: '1', type: 'Informed Consent for Procedure', status: 'signed', signedBy: 'Patient', signedDate: '2026-03-17', witnessedBy: 'KLE' },
     { id: '2', type: 'Informed Financial Consent', status: 'signed', signedBy: 'Patient', signedDate: '2026-03-17', witnessedBy: 'KLE' },
@@ -56,9 +63,23 @@ export default function ConsentPage() {
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Add Consent Form
-          </button>
+          <div className="flex items-center gap-2">
+            {patient && admission && (
+              <PdfExportButton
+                type="consent-form"
+                patient={{ ...patient, dob: patient.dob }}
+                admission={{
+                  ...admission,
+                  date: admission.date,
+                  surgeonName: surgeon?.name ?? null,
+                  anaesthetistName: anaesthetist?.name ?? null,
+                }}
+              />
+            )}
+            <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Add Consent Form
+            </button>
+          </div>
         </div>
 
         <table className="w-full">

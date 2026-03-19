@@ -1,13 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Save, Plus } from 'lucide-react'
+import TemplatePicker from '@/components/template-picker'
 
 export default function RecoveryPage() {
   const params = useParams()
   const router = useRouter()
   const [activeStage, setActiveStage] = useState(1)
+
+  const [fields, setFields] = useState<Record<string, string>>({
+    nurse: '',
+    airway: 'Patent',
+    breathing: 'Spontaneous',
+    o2Delivery: 'Room Air',
+    activity: 'Moves all extremities (2)',
+    respiration: 'Breathes deeply, coughs (2)',
+    circulation: 'BP ±20% pre-op (2)',
+    consciousness: 'Fully awake (2)',
+    o2Saturation: 'SpO2 >92% on room air (2)',
+    nauseaVomiting: 'None (2)',
+  })
+
+  const handleApplyTemplate = useCallback((templateFields: Record<string, string>) => {
+    setFields(prev => ({ ...prev, ...templateFields }))
+  }, [])
+
+  const getCurrentFields = useCallback(() => fields, [fields])
+
+  const fieldLabels: Record<string, string> = {
+    nurse: 'Nurse',
+    airway: 'Airway',
+    breathing: 'Breathing',
+    o2Delivery: 'O2 Delivery',
+    activity: 'Activity',
+    respiration: 'Respiration',
+    circulation: 'Circulation',
+    consciousness: 'Consciousness',
+    o2Saturation: 'O2 Saturation',
+    nauseaVomiting: 'Nausea/Vomiting',
+  }
+
+  const updateField = (key: string, value: string) => {
+    setFields(prev => ({ ...prev, [key]: value }))
+  }
 
   return (
     <div className="space-y-6">
@@ -20,7 +57,13 @@ export default function RecoveryPage() {
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <TemplatePicker
+              category="recovery"
+              onApply={handleApplyTemplate}
+              getCurrentFields={getCurrentFields}
+              fieldLabels={fieldLabels}
+            />
             <button
               onClick={() => setActiveStage(1)}
               className={`px-4 py-2 rounded-lg text-sm font-medium ${activeStage === 1 ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400'}`}
@@ -46,7 +89,7 @@ export default function RecoveryPage() {
           </div>
           <div>
             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nurse</label>
-            <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+            <select value={fields.nurse} onChange={e => updateField('nurse', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
               <option value="">Select nurse...</option>
               <option>KLE - Kerry Lentini</option>
               <option>MOR - Monica Roberts</option>
@@ -61,7 +104,7 @@ export default function RecoveryPage() {
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Airway</label>
-              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.airway} onChange={e => updateField('airway', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Patent</option>
                 <option>LMA in situ</option>
                 <option>ETT in situ</option>
@@ -70,7 +113,7 @@ export default function RecoveryPage() {
             </div>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Breathing</label>
-              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.breathing} onChange={e => updateField('breathing', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Spontaneous</option>
                 <option>Assisted</option>
                 <option>Mechanical</option>
@@ -78,7 +121,7 @@ export default function RecoveryPage() {
             </div>
             <div>
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">O2 Delivery</label>
-              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.o2Delivery} onChange={e => updateField('o2Delivery', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Room Air</option>
                 <option>Nasal Prongs</option>
                 <option>Hudson Mask</option>
@@ -122,16 +165,16 @@ export default function RecoveryPage() {
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Discharge Criteria (Aldrete Score)</h4>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'Activity', options: ['Moves all extremities (2)', 'Moves 2 extremities (1)', 'Unable to move (0)'] },
-              { label: 'Respiration', options: ['Breathes deeply, coughs (2)', 'Dyspnea, shallow breathing (1)', 'Apnea (0)'] },
-              { label: 'Circulation', options: ['BP ±20% pre-op (2)', 'BP ±20-50% pre-op (1)', 'BP ±50% pre-op (0)'] },
-              { label: 'Consciousness', options: ['Fully awake (2)', 'Arousable on calling (1)', 'Not responsive (0)'] },
-              { label: 'O2 Saturation', options: ['SpO2 >92% on room air (2)', 'Needs O2 to maintain >90% (1)', 'SpO2 <90% with O2 (0)'] },
-              { label: 'Nausea/Vomiting', options: ['None (2)', 'Mild (1)', 'Severe (0)'] },
+              { key: 'activity', label: 'Activity', options: ['Moves all extremities (2)', 'Moves 2 extremities (1)', 'Unable to move (0)'] },
+              { key: 'respiration', label: 'Respiration', options: ['Breathes deeply, coughs (2)', 'Dyspnea, shallow breathing (1)', 'Apnea (0)'] },
+              { key: 'circulation', label: 'Circulation', options: ['BP ±20% pre-op (2)', 'BP ±20-50% pre-op (1)', 'BP ±50% pre-op (0)'] },
+              { key: 'consciousness', label: 'Consciousness', options: ['Fully awake (2)', 'Arousable on calling (1)', 'Not responsive (0)'] },
+              { key: 'o2Saturation', label: 'O2 Saturation', options: ['SpO2 >92% on room air (2)', 'Needs O2 to maintain >90% (1)', 'SpO2 <90% with O2 (0)'] },
+              { key: 'nauseaVomiting', label: 'Nausea/Vomiting', options: ['None (2)', 'Mild (1)', 'Severe (0)'] },
             ].map(item => (
-              <div key={item.label} className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+              <div key={item.key} className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{item.label}</label>
-                <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+                <select value={fields[item.key]} onChange={e => updateField(item.key, e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                   {item.options.map(opt => <option key={opt}>{opt}</option>)}
                 </select>
               </div>

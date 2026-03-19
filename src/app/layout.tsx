@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ClientProviders } from "./client-providers";
+import KeyboardShortcuts from "@/components/keyboard-shortcuts";
 
 export const metadata: Metadata = {
   title: "SurgiRecord - Theatre Management",
@@ -25,7 +27,10 @@ export default function RootLayout({
         }} />
       </head>
       <body className="min-h-screen bg-[#f0f4f8] dark:bg-slate-900 dark:text-slate-200">
-        {children}
+        <ClientProviders>
+          <KeyboardShortcuts />
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );

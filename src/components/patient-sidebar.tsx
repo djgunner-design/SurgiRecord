@@ -111,6 +111,7 @@ export default function PatientSidebar({ admissionId, collapsed, onToggle }: Sid
         { label: 'Discharge Checklist', href: `${basePath}/discharge` },
         { label: 'Discharge Summary', href: `${basePath}/discharge` },
         { label: 'Post Op Call Details', href: `${basePath}/discharge` },
+        { label: 'Post-Op Calls', href: `${basePath}/post-op-calls`, icon: <Phone className="w-3 h-3" /> },
         { label: 'Emergency Resuscitation', href: `${basePath}/discharge` },
       ],
     },

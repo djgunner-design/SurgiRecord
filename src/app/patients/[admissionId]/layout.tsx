@@ -5,7 +5,10 @@ import { useEffect, useState } from 'react'
 import { Home, Settings, ArrowLeft, Activity, Pill, FileText, Truck, CheckSquare, ClipboardList, Moon, Sun, Menu } from 'lucide-react'
 import PatientBanner from '@/components/patient-banner'
 import PatientSidebar from '@/components/patient-sidebar'
+import TimerWidget from '@/components/timer-widget'
+import RecentPatients from '@/components/recent-patients'
 import { findAdmission, findPatient, findUser } from '@/lib/sample-data'
+import { addRecentPatient } from '@/lib/store'
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
   const params = useParams()
@@ -21,6 +24,20 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
 
     setDarkMode(document.documentElement.classList.contains('dark'))
   }, [])
+
+  // Record recent patient visit
+  useEffect(() => {
+    const adm = findAdmission(admissionId)
+    if (!adm) return
+    const pat = findPatient(adm.patientId)
+    if (!pat) return
+    addRecentPatient(
+      admissionId,
+      `${pat.firstName} ${pat.lastName}`,
+      pat.mrn,
+      adm.operationNotes.substring(0, 60)
+    )
+  }, [admissionId])
 
   const toggleDarkMode = () => {
     const newMode = !darkMode
@@ -76,6 +93,7 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
             <button className="px-2 sm:px-3 py-1.5 text-xs font-medium bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors whitespace-nowrap hidden md:inline-flex">Care Plan</button>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            <RecentPatients />
             <button onClick={toggleDarkMode} className="p-2 text-gray-600 dark:text-gray-300 hover:text-cyan-600 dark:hover:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-slate-700 rounded-lg transition-colors" title="Toggle dark mode">
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
@@ -109,6 +127,7 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
           {children}
         </main>
       </div>
+      <TimerWidget />
     </div>
   )
 }

@@ -2,13 +2,17 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Save } from 'lucide-react'
-import { findAdmission } from '@/lib/sample-data'
+import { findAdmission, findPatient, findUser } from '@/lib/sample-data'
+import PdfExportButton from '@/components/pdf-export-button'
 
 export default function OperationReportPage() {
   const params = useParams()
   const router = useRouter()
   const admissionId = params.admissionId as string
   const admission = findAdmission(admissionId)
+  const patient = admission ? findPatient(admission.patientId) : null
+  const surgeon = admission?.surgeonId ? findUser(admission.surgeonId) : null
+  const anaesthetist = admission?.anaesthetistId ? findUser(admission.anaesthetistId) : null
 
   return (
     <div className="space-y-6">
@@ -21,6 +25,18 @@ export default function OperationReportPage() {
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
+          {patient && admission && (
+            <PdfExportButton
+              type="operation-report"
+              patient={{ ...patient, dob: patient.dob }}
+              admission={{
+                ...admission,
+                date: admission.date,
+                surgeonName: surgeon?.name ?? null,
+                anaesthetistName: anaesthetist?.name ?? null,
+              }}
+            />
+          )}
         </div>
 
         <div className="space-y-6">

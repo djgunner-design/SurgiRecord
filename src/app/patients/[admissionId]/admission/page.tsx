@@ -1,14 +1,62 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Save } from 'lucide-react'
 import { findAdmission } from '@/lib/sample-data'
+import TemplatePicker from '@/components/template-picker'
 
 export default function NursingAdmissionPage() {
   const params = useParams()
   const router = useRouter()
   const admissionId = params.admissionId as string
   const admission = findAdmission(admissionId)
+
+  const [fields, setFields] = useState<Record<string, string>>({
+    careGoals: 'Good care',
+    consentCompleted: 'Yes',
+    procedureMatch: 'Yes',
+    advancedDirective: 'No',
+    preOpPhotos: 'N/A',
+    allergies: 'No',
+    comorbidities: 'No',
+    obsTime: '06:45',
+    temp: '36.6',
+    bpSystolic: '117',
+    bpDiastolic: '64',
+    hr: '86',
+    rr: '14',
+    spo2: '100',
+    painScore: '0',
+  })
+
+  const handleApplyTemplate = useCallback((templateFields: Record<string, string>) => {
+    setFields(prev => ({ ...prev, ...templateFields }))
+  }, [])
+
+  const getCurrentFields = useCallback(() => fields, [fields])
+
+  const fieldLabels: Record<string, string> = {
+    careGoals: 'Care Goals',
+    consentCompleted: 'Consent',
+    procedureMatch: 'Procedure Match',
+    advancedDirective: 'Advanced Directive',
+    preOpPhotos: 'Pre-Op Photos',
+    allergies: 'Allergies',
+    comorbidities: 'Comorbidities',
+    obsTime: 'Obs Time',
+    temp: 'Temp',
+    bpSystolic: 'BP Sys',
+    bpDiastolic: 'BP Dia',
+    hr: 'HR',
+    rr: 'RR',
+    spo2: 'SpO2',
+    painScore: 'Pain',
+  }
+
+  const updateField = (key: string, value: string) => {
+    setFields(prev => ({ ...prev, [key]: value }))
+  }
 
   return (
     <div className="space-y-6">
@@ -21,7 +69,13 @@ export default function NursingAdmissionPage() {
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <TemplatePicker
+              category="admission"
+              onApply={handleApplyTemplate}
+              getCurrentFields={getCurrentFields}
+              fieldLabels={fieldLabels}
+            />
             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">Finalised</span>
             <button className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600">Amend</button>
           </div>
@@ -48,35 +102,35 @@ export default function NursingAdmissionPage() {
             <div className="grid grid-cols-4 gap-4">
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Obs time</label>
-                <input type="time" defaultValue="06:45" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="time" value={fields.obsTime} onChange={e => updateField('obsTime', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Temp</label>
-                <input type="number" step="0.1" defaultValue="36.6" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="number" step="0.1" value={fields.temp} onChange={e => updateField('temp', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">BP Systolic</label>
-                <input type="number" defaultValue="117" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="number" value={fields.bpSystolic} onChange={e => updateField('bpSystolic', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">BP Diastolic</label>
-                <input type="number" defaultValue="64" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="number" value={fields.bpDiastolic} onChange={e => updateField('bpDiastolic', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">HR</label>
-                <input type="number" defaultValue="86" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="number" value={fields.hr} onChange={e => updateField('hr', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">RR</label>
-                <input type="number" defaultValue="14" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="number" value={fields.rr} onChange={e => updateField('rr', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">SpO2</label>
-                <input type="number" defaultValue="100" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="number" value={fields.spo2} onChange={e => updateField('spo2', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pain Score</label>
-                <input type="number" min="0" max="10" defaultValue="0" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
+                <input type="number" min="0" max="10" value={fields.painScore} onChange={e => updateField('painScore', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
               </div>
             </div>
           </div>
@@ -88,13 +142,13 @@ export default function NursingAdmissionPage() {
 
           <div>
             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">How can we support your care goals during your admission?<span className="text-red-500">*</span></label>
-            <textarea className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={2} defaultValue="Good care" />
+            <textarea className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={2} value={fields.careGoals} onChange={e => updateField('careGoals', e.target.value)} />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Has the consent form been completed?<span className="text-red-500">*</span></label>
-              <select defaultValue="Yes" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.consentCompleted} onChange={e => updateField('consentCompleted', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Yes</option>
                 <option>No</option>
                 <option>N/A</option>
@@ -102,7 +156,7 @@ export default function NursingAdmissionPage() {
             </div>
             <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Does the patient&apos;s stated procedure match the consent form?</label>
-              <select defaultValue="Yes" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.procedureMatch} onChange={e => updateField('procedureMatch', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Yes</option>
                 <option>No</option>
                 <option>N/A</option>
@@ -110,7 +164,7 @@ export default function NursingAdmissionPage() {
             </div>
             <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Does this patient have an advanced health directive?</label>
-              <select defaultValue="No" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.advancedDirective} onChange={e => updateField('advancedDirective', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Yes</option>
                 <option>No</option>
                 <option>N/A</option>
@@ -121,7 +175,7 @@ export default function NursingAdmissionPage() {
           <div className="grid grid-cols-3 gap-4">
             <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Has the patient had pre-op photos taken?</label>
-              <select defaultValue="N/A" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.preOpPhotos} onChange={e => updateField('preOpPhotos', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Yes</option>
                 <option>No</option>
                 <option>N/A</option>
@@ -129,14 +183,14 @@ export default function NursingAdmissionPage() {
             </div>
             <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Allergies and adverse reactions?<span className="text-red-500">*</span></label>
-              <select defaultValue="No" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.allergies} onChange={e => updateField('allergies', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Yes</option>
                 <option>No</option>
               </select>
             </div>
             <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
               <label className="block text-xs text-gray-500 dark:text-gray-400 mb-2">Relevant co-morbidities, alerts or post surgery concerns discussed with the team?</label>
-              <select defaultValue="No" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
+              <select value={fields.comorbidities} onChange={e => updateField('comorbidities', e.target.value)} className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Yes</option>
                 <option>No</option>
                 <option>N/A</option>
