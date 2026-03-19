@@ -45,11 +45,11 @@ export default function MedicationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-700 text-white px-6 py-3 rounded-t-xl">
+      <div className="bg-gray-700 dark:bg-slate-700 text-white px-6 py-3 rounded-t-xl">
         <h2 className="text-lg font-semibold">MEDICATIONS</h2>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
@@ -58,16 +58,16 @@ export default function MedicationsPage() {
 
         {/* IV Fluid Orders */}
         <div className="mb-8">
-          <div className="bg-gray-600 text-white px-4 py-2 rounded-t-lg">
+          <div className="bg-gray-600 dark:bg-slate-600 text-white px-4 py-2 rounded-t-lg">
             <h3 className="text-sm font-medium">IV Fluid Order</h3>
           </div>
-          <div className="border border-gray-200 rounded-b-lg p-4">
+          <div className="border border-gray-200 dark:border-slate-700 rounded-b-lg p-4">
             <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2 mb-4">
               <Plus className="w-4 h-4" /> Order Fluid
             </button>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-gray-600">
+                <tr className="border-b border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400">
                   <th className="px-3 py-2 text-left">Date</th>
                   <th className="px-3 py-2 text-left">Indication</th>
                   <th className="px-3 py-2 text-left">Fluid Type</th>
@@ -82,7 +82,7 @@ export default function MedicationsPage() {
               </thead>
               <tbody>
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center text-gray-400">No IV fluid orders</td>
+                  <td colSpan={10} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">No IV fluid orders</td>
                 </tr>
               </tbody>
             </table>
@@ -91,17 +91,17 @@ export default function MedicationsPage() {
 
         {/* Once Only / Pre-medication */}
         <div className="mb-8">
-          <div className="bg-gray-600 text-white px-4 py-2 rounded-t-lg">
+          <div className="bg-gray-600 dark:bg-slate-600 text-white px-4 py-2 rounded-t-lg">
             <h3 className="text-sm font-medium">Once Only, pre medication and nurse initiated medication</h3>
           </div>
-          <div className="border border-gray-200 rounded-b-lg p-4">
+          <div className="border border-gray-200 dark:border-slate-700 rounded-b-lg p-4">
             <div className="flex items-center gap-4 mb-4">
               <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">Saved protocol</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Saved protocol</label>
                 <select
                   value={selectedProtocol}
                   onChange={(e) => handleProtocolChange(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg text-sm"
+                  className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm"
                 >
                   <option value="">Select a protocol...</option>
                   <option>Cataract Protocol</option>
@@ -118,7 +118,7 @@ export default function MedicationsPage() {
             </button>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-gray-600">
+                <tr className="border-b border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-400">
                   <th className="px-3 py-2 text-left">Date Prescribed</th>
                   <th className="px-3 py-2 text-left">Medication</th>
                   <th className="px-3 py-2 text-left">Route</th>
@@ -132,18 +132,18 @@ export default function MedicationsPage() {
               <tbody>
                 {medications.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-3 py-6 text-center text-gray-400">No medications ordered</td>
+                    <td colSpan={8} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">No medications ordered</td>
                   </tr>
                 ) : (
                   medications.map((med, i) => (
-                    <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-700">{med.datePrescribed}</td>
+                    <tr key={i} className="border-b border-gray-100 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700">
+                      <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{med.datePrescribed}</td>
                       <td className="px-3 py-2 text-gray-700 font-medium">{med.medication}</td>
-                      <td className="px-3 py-2 text-gray-700">{med.route}</td>
-                      <td className="px-3 py-2 text-gray-700">{med.laterality}</td>
-                      <td className="px-3 py-2 text-gray-700">{med.dose}</td>
-                      <td className="px-3 py-2 text-gray-400">-</td>
-                      <td className="px-3 py-2 text-gray-400">-</td>
+                      <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{med.route}</td>
+                      <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{med.laterality}</td>
+                      <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{med.dose}</td>
+                      <td className="px-3 py-2 text-gray-400 dark:text-gray-500">-</td>
+                      <td className="px-3 py-2 text-gray-400 dark:text-gray-500">-</td>
                       <td className="px-3 py-2">
                         <button onClick={() => removeMedication(i)} className="text-gray-400 hover:text-red-500">
                           <Trash2 className="w-4 h-4" />

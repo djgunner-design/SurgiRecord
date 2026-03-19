@@ -18,13 +18,13 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-700 text-white px-6 py-3 rounded-t-xl">
+      <div className="bg-gray-700 dark:bg-slate-700 text-white px-6 py-3 rounded-t-xl">
         <h2 className="text-lg font-semibold">EVENTS</h2>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-sm font-semibold text-gray-700">Event Timeline</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Event Timeline</h3>
           <button className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
             <Plus className="w-4 h-4" /> Add Event
           </button>
@@ -37,15 +37,15 @@ export default function EventsPage() {
                 <div className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0">
                   <Clock className="w-4 h-4 text-cyan-600" />
                 </div>
-                {i < events.length - 1 && <div className="w-0.5 flex-1 bg-gray-200 mt-1" />}
+                {i < events.length - 1 && <div className="w-0.5 flex-1 bg-gray-200 dark:bg-slate-600 mt-1" />}
               </div>
               <div className="pb-6">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-gray-800">{event.type}</span>
-                  <span className="text-xs text-gray-400">{event.dateTime}</span>
+                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{event.type}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{event.dateTime}</span>
                   <span className="text-xs font-medium text-cyan-600">{event.user}</span>
                 </div>
-                <p className="text-sm text-gray-600">{event.description}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{event.description}</p>
               </div>
             </div>
           ))}

@@ -10,11 +10,11 @@ export default function DischargePage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-700 text-white px-6 py-3 rounded-t-xl">
+      <div className="bg-gray-700 dark:bg-slate-700 text-white px-6 py-3 rounded-t-xl">
         <h2 className="text-lg font-semibold">DISCHARGE</h2>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
@@ -23,7 +23,7 @@ export default function DischargePage() {
 
         {/* Discharge Checklist */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Discharge Checklist</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Discharge Checklist</h3>
           <div className="space-y-3">
             <CheckItem label="Patient is alert and oriented" />
             <CheckItem label="Vital signs stable for at least 30 minutes" />
@@ -41,15 +41,15 @@ export default function DischargePage() {
 
         {/* Discharge Summary */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Discharge Summary</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Discharge Summary</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Discharge Time</label>
-              <input type="time" className="w-full px-3 py-2 border rounded-lg text-sm max-w-xs" />
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Discharge Time</label>
+              <input type="time" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm max-w-xs" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Discharge Type</label>
-              <select className="w-full px-3 py-2 border rounded-lg text-sm max-w-xs">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Discharge Type</label>
+              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm max-w-xs">
                 <option>Routine Discharge</option>
                 <option>Discharge Without Escort</option>
                 <option>Transfer to Ward</option>
@@ -58,35 +58,35 @@ export default function DischargePage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Discharge Notes</label>
-              <textarea className="w-full px-4 py-3 border rounded-lg text-sm" rows={4} placeholder="Additional discharge notes..." />
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Discharge Notes</label>
+              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={4} placeholder="Additional discharge notes..." />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Post-Op Instructions Given</label>
-              <textarea className="w-full px-4 py-3 border rounded-lg text-sm" rows={3} placeholder="Instructions provided to patient..." />
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Post-Op Instructions Given</label>
+              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={3} placeholder="Instructions provided to patient..." />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Follow Up</label>
-              <textarea className="w-full px-4 py-3 border rounded-lg text-sm" rows={2} placeholder="Follow-up arrangements..." />
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Follow Up</label>
+              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={2} placeholder="Follow-up arrangements..." />
             </div>
           </div>
         </div>
 
         {/* Post-Op Call Details */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Post Op Call Details</h3>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Post Op Call Details</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Call Date</label>
-              <input type="date" className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Call Date</label>
+              <input type="date" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Call Time</label>
-              <input type="time" className="w-full px-3 py-2 border rounded-lg text-sm" />
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Call Time</label>
+              <input type="time" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs text-gray-500 mb-1">Call Notes</label>
-              <textarea className="w-full px-4 py-3 border rounded-lg text-sm" rows={3} placeholder="Details of post-op phone call..." />
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Call Notes</label>
+              <textarea className="w-full px-4 py-3 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" rows={3} placeholder="Details of post-op phone call..." />
             </div>
           </div>
         </div>
@@ -104,16 +104,16 @@ export default function DischargePage() {
 function CheckItem({ label }: { label: string }) {
   const [checked, setChecked] = useState(false)
   return (
-    <label className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+    <label className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer">
       <div
         onClick={() => setChecked(!checked)}
         className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-          checked ? 'bg-green-500 border-green-500' : 'border-gray-300'
+          checked ? 'bg-green-500 border-green-500' : 'border-gray-300 dark:border-slate-600'
         }`}
       >
         {checked && <Check className="w-3 h-3 text-white" />}
       </div>
-      <span className={`text-sm ${checked ? 'text-gray-400' : 'text-gray-700'}`}>{label}</span>
+      <span className={`text-sm ${checked ? 'text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>{label}</span>
     </label>
   )
 }

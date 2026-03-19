@@ -11,11 +11,11 @@ export default function RecoveryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-700 text-white px-6 py-3 rounded-t-xl">
+      <div className="bg-gray-700 dark:bg-slate-700 text-white px-6 py-3 rounded-t-xl">
         <h2 className="text-lg font-semibold">RECOVERY</h2>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
@@ -23,30 +23,30 @@ export default function RecoveryPage() {
           <div className="flex gap-2">
             <button
               onClick={() => setActiveStage(1)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${activeStage === 1 ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${activeStage === 1 ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400'}`}
             >
               Stage 1
             </button>
             <button
               onClick={() => setActiveStage(2)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${activeStage === 2 ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${activeStage === 2 ? 'bg-teal-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400'}`}
             >
               Stage 2
             </button>
           </div>
         </div>
 
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">Recovery Stage {activeStage}</h3>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Recovery Stage {activeStage}</h3>
 
         {/* Recovery Assessment */}
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Arrival Time</label>
-            <input type="time" className="w-full px-3 py-2 border rounded-lg text-sm" />
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Arrival Time</label>
+            <input type="time" className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm" />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Nurse</label>
-            <select className="w-full px-3 py-2 border rounded-lg text-sm">
+            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nurse</label>
+            <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
               <option value="">Select nurse...</option>
               <option>KLE - Kerry Lentini</option>
               <option>MOR - Monica Roberts</option>
@@ -57,11 +57,11 @@ export default function RecoveryPage() {
 
         {/* Airway Assessment */}
         <div className="mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">Airway Assessment</h4>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Airway Assessment</h4>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Airway</label>
-              <select className="w-full px-3 py-2 border rounded-lg text-sm">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Airway</label>
+              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Patent</option>
                 <option>LMA in situ</option>
                 <option>ETT in situ</option>
@@ -69,16 +69,16 @@ export default function RecoveryPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Breathing</label>
-              <select className="w-full px-3 py-2 border rounded-lg text-sm">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Breathing</label>
+              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Spontaneous</option>
                 <option>Assisted</option>
                 <option>Mechanical</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">O2 Delivery</label>
-              <select className="w-full px-3 py-2 border rounded-lg text-sm">
+              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">O2 Delivery</label>
+              <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                 <option>Room Air</option>
                 <option>Nasal Prongs</option>
                 <option>Hudson Mask</option>
@@ -91,14 +91,14 @@ export default function RecoveryPage() {
         {/* Recovery Observations */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-sm font-semibold text-gray-700">Recovery Observations</h4>
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Recovery Observations</h4>
             <button className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 flex items-center gap-1">
               <Plus className="w-3 h-3" /> Add Obs
             </button>
           </div>
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-100 text-gray-600">
+              <tr className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400">
                 <th className="px-3 py-2 text-left">Time</th>
                 <th className="px-3 py-2 text-center">RR</th>
                 <th className="px-3 py-2 text-center">SpO2</th>
@@ -111,7 +111,7 @@ export default function RecoveryPage() {
             </thead>
             <tbody>
               <tr>
-                <td colSpan={8} className="px-3 py-6 text-center text-gray-400">No recovery observations yet</td>
+                <td colSpan={8} className="px-3 py-6 text-center text-gray-400 dark:text-gray-500">No recovery observations yet</td>
               </tr>
             </tbody>
           </table>
@@ -119,7 +119,7 @@ export default function RecoveryPage() {
 
         {/* Discharge Criteria */}
         <div className="mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">Discharge Criteria (Aldrete Score)</h4>
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Discharge Criteria (Aldrete Score)</h4>
           <div className="grid grid-cols-2 gap-4">
             {[
               { label: 'Activity', options: ['Moves all extremities (2)', 'Moves 2 extremities (1)', 'Unable to move (0)'] },
@@ -129,9 +129,9 @@ export default function RecoveryPage() {
               { label: 'O2 Saturation', options: ['SpO2 >92% on room air (2)', 'Needs O2 to maintain >90% (1)', 'SpO2 <90% with O2 (0)'] },
               { label: 'Nausea/Vomiting', options: ['None (2)', 'Mild (1)', 'Severe (0)'] },
             ].map(item => (
-              <div key={item.label} className="p-3 bg-gray-50 rounded-lg">
-                <label className="block text-xs font-medium text-gray-600 mb-1">{item.label}</label>
-                <select className="w-full px-3 py-2 border rounded-lg text-sm">
+              <div key={item.label} className="p-3 bg-gray-50 dark:bg-slate-700 rounded-lg">
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">{item.label}</label>
+                <select className="w-full px-3 py-2 border dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm">
                   {item.options.map(opt => <option key={opt}>{opt}</option>)}
                 </select>
               </div>

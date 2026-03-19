@@ -53,7 +53,7 @@ export default function PatientOverviewPage() {
                   <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                   <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{fav.name}</span>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{fav.operationNotes}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 truncate">{fav.operationNotes}</p>
               </div>
             ))}
           </div>
@@ -61,22 +61,22 @@ export default function PatientOverviewPage() {
       )}
 
       {/* Reports */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800">Reports of Patient: {patient.lastName} {patient.firstName} {patient.title}</h3>
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-600">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Reports of Patient: {patient.lastName} {patient.firstName} {patient.title}</h3>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-700 text-white text-sm">
+            <tr className="bg-gray-700 dark:bg-slate-700 text-white text-sm">
               <th className="px-6 py-3 text-left font-medium">REPORT</th>
               <th className="px-6 py-3 text-left font-medium">DATE</th>
             </tr>
           </thead>
           <tbody>
             {reports.map((report, i) => (
-              <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors">
-                <td className="px-6 py-3 text-sm text-gray-700">{report.name}</td>
-                <td className="px-6 py-3 text-sm text-gray-500">{report.date}</td>
+              <tr key={i} className="border-b border-gray-50 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+                <td className="px-6 py-3 text-sm text-gray-700 dark:text-gray-300">{report.name}</td>
+                <td className="px-6 py-3 text-sm text-gray-500 dark:text-gray-400">{report.date}</td>
               </tr>
             ))}
           </tbody>
@@ -84,27 +84,27 @@ export default function PatientOverviewPage() {
       </div>
 
       {/* Recent Notes */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-600">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
             <FileText className="w-5 h-5 text-cyan-600" />
             Recent Notes
           </h3>
         </div>
         <div className="p-6 space-y-4">
           {notes.length === 0 ? (
-            <p className="text-gray-500 text-sm">No notes yet</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm">No notes yet</p>
           ) : (
             notes.map(note => {
               const user = findUser(note.userId)
               return (
                 <div key={note.id} className="border-l-4 border-cyan-500 pl-4 py-2">
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1">
                     <Clock className="w-3 h-3" />
                     {new Date(note.dateTime).toLocaleString('en-AU')}
-                    <span className="font-medium text-gray-700">— {user?.initials}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">— {user?.initials}</span>
                   </div>
-                  <p className="text-sm text-gray-700">{note.content}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{note.content}</p>
                 </div>
               )
             })
@@ -113,13 +113,13 @@ export default function PatientOverviewPage() {
       </div>
 
       {/* Handover Summary */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800">Handover Summary</h3>
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-600">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Handover Summary</h3>
         </div>
         <table className="w-full">
           <thead>
-            <tr className="bg-gray-700 text-white text-sm">
+            <tr className="bg-gray-700 dark:bg-slate-700 text-white text-sm">
               <th className="px-6 py-3 text-left font-medium">HANDOVER</th>
               <th className="px-6 py-3 text-left font-medium">FROM</th>
               <th className="px-6 py-3 text-left font-medium">TO</th>
@@ -131,11 +131,11 @@ export default function PatientOverviewPage() {
               const fromUser = findUser(h.fromUserId)
               const toUser = h.toUserId ? findUser(h.toUserId) : null
               return (
-                <tr key={h.id} className="border-b border-gray-50">
-                  <td className="px-6 py-3 text-sm text-gray-700 capitalize">{h.stage.toLowerCase().replace('_', ' ')}</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{fromUser?.initials} ({fromUser?.name})</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{toUser ? `${toUser.initials} (${toUser.name})` : '—'}</td>
-                  <td className="px-6 py-3 text-sm text-gray-600">{h.time || '—'}</td>
+                <tr key={h.id} className="border-b border-gray-50 dark:border-slate-700">
+                  <td className="px-6 py-3 text-sm text-gray-700 dark:text-gray-300 capitalize">{h.stage.toLowerCase().replace('_', ' ')}</td>
+                  <td className="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">{fromUser?.initials} ({fromUser?.name})</td>
+                  <td className="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">{toUser ? `${toUser.initials} (${toUser.name})` : '—'}</td>
+                  <td className="px-6 py-3 text-sm text-gray-600 dark:text-gray-400">{h.time || '—'}</td>
                 </tr>
               )
             })}

@@ -126,7 +126,7 @@ export default function NotesPage() {
           <textarea
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 dark:bg-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
             rows={4}
             placeholder="Enter clinical note..."
           />
