@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SURGEON
+  NURSE
+  ANAESTHETIST
+  ADMIN
+}
+
+enum AdmissionStatus {
+  BOOKED
+  ADMITTED
+  IN_THEATRE
+  RECOVERY_1
+  RECOVERY_2
+  DISCHARGED
+  CANCELLED
+}
+
+enum MedicationType {
+  IV_FLUID
+  ONCE_ONLY
+  PRE_MED
+}
+
+enum HandoverStage {
+  ADMISSION
+  ANAESTHESIA
+  PROCEDURE
+  RECOVERY_1
+  RECOVERY_2
+}
+
+enum RiskType {
+  FALLS
+  PRESSURE
+  DELIRIUM
+  VTE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  initials  String   @unique
+  pin       String
+  role      Role
+  createdAt DateTime @default(now())
+
+  surgeonAdmissions      Admission[] @relation("Surgeon")
+  anaesthetistAdmissions Admission[] @relation("Anaesthetist")
+  observations           Observation[]
+  prescribedMeds         Medication[]  @relation("Prescriber")
+  administeredMeds       Medication[]  @relation("Administerer")
+  notes                  Note[]
+  handoversFrom          Handover[]    @relation("HandoverFrom")
+  handoversTo            Handover[]    @relation("HandoverTo")
+  riskAssessments        RiskAssessment[]
+  operationReports       OperationReport[]
+  events                 Event[]
+}
+
+model Patient {
+  id            String   @id @default(cuid())
+  mrn           String   @unique
+  firstName     String
+  lastName      String
+  title         String?
+  dob           DateTime
+  sex           String
+  weight        Float?
+  height        Float?
+  address       String?
+  suburb        String?
+  state         String?
+  postcode      String?
+  atsiStatus    String?
+  allergies     String?
+  comorbidities String?
+  createdAt     DateTime @default(now())
+
+  admissions Admission[]
+}
+
+model Admission {
+  id                 String          @id @default(cuid())
+  patientId          String
+  date               DateTime
+  time               String?
+  status             AdmissionStatus @default(BOOKED)
+  operationNotes     String?
+  location           String?
+  procedureStartTime String?
+  covidStatus        String?
+  lastFood           DateTime?
+  lastFluid          DateTime?
+  createdAt          DateTime        @default(now())
+
+  surgeonId      String?
+  anaesthetistId String?
+
+  patient      Patient  @relation(fields: [patientId], references: [id])
+  surgeon      User?    @relation("Surgeon", fields: [surgeonId], references: [id])
+  anaesthetist User?    @relation("Anaesthetist", fields: [anaesthetistId], references: [id])
+
+  observations       Observation[]
+  medications        Medication[]
+  notes              Note[]
+  handovers          Handover[]
+  riskAssessments    RiskAssessment[]
+  surgicalChecklist  SurgicalChecklist?
+  countSheet         CountSheet?
+  intraOperative     IntraOperative?
+  operationReport    OperationReport?
+  recovery           Recovery[]
+  discharge          Discharge?
+  events             Event[]
+  nursingAdmission   NursingAdmission?
+}
+
+model Observation {
+  id             String   @id @default(cuid())
+  admissionId    String
+  time           DateTime
+  rr             Int?
+  respDistress   String?
+  spo2           Int?
+  o2Flow         Float?
+  hr             Int?
+  bpSystolic     Int?
+  bpDiastolic    Int?
+  temp           Float?
+  capRefill      String?
+  consciousness  String?
+  painScore      Int?
+  nausea         String?
+  woundSite      String?
+  woundOoze      String?
+  woundColor     String?
+  movement       String?
+  sensation      String?
+  comments       String?
+  userId         String
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Medication {
+  id               String         @id @default(cuid())
+  admissionId      String
+  type             MedicationType
+  medication       String
+  route            String?
+  laterality       String?
+  dose             String?
+  fluidType        String?
+  volume           Float?
+  rate             Float?
+  additive         String?
+  indication       String?
+  datePrescribed   DateTime
+  dateAdministered DateTime?
+  dateFinished     DateTime?
+  prescriberId     String
+  administeredById String?
+
+  admission    Admission @relation(fields: [admissionId], references: [id])
+  prescriber   User      @relation("Prescriber", fields: [prescriberId], references: [id])
+  administerer User?     @relation("Administerer", fields: [administeredById], references: [id])
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  admissionId String
+  dateTime    DateTime @default(now())
+  content     String
+  userId      String
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Handover {
+  id          String        @id @default(cuid())
+  admissionId String
+  stage       HandoverStage
+  fromUserId  String
+  toUserId    String?
+  time        String?
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+  fromUser  User      @relation("HandoverFrom", fields: [fromUserId], references: [id])
+  toUser    User?     @relation("HandoverTo", fields: [toUserId], references: [id])
+}
+
+model RiskAssessment {
+  id           String   @id @default(cuid())
+  admissionId  String
+  type         RiskType
+  score        Int
+  riskLevel    String
+  data         Json?
+  assessedById String
+
+  admission  Admission @relation(fields: [admissionId], references: [id])
+  assessedBy User      @relation(fields: [assessedById], references: [id])
+}
+
+model SurgicalChecklist {
+  id          String @id @default(cuid())
+  admissionId String @unique
+  signIn      Json?
+  timeOut     Json?
+  signOut     Json?
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+}
+
+model CountSheet {
+  id          String @id @default(cuid())
+  admissionId String @unique
+  items       Json?
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+}
+
+model IntraOperative {
+  id          String @id @default(cuid())
+  admissionId String @unique
+  data        Json?
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+}
+
+model OperationReport {
+  id            String  @id @default(cuid())
+  admissionId   String  @unique
+  findings      String?
+  procedure     String?
+  complications String?
+  implants      String?
+  userId        String
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model Recovery {
+  id          String @id @default(cuid())
+  admissionId String
+  stage       Int
+  data        Json?
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+}
+
+model Discharge {
+  id          String  @id @default(cuid())
+  admissionId String  @unique
+  type        String?
+  checklist   Json?
+  summary     String?
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  admissionId String
+  type        String
+  description String
+  dateTime    DateTime @default(now())
+  userId      String
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+}
+
+model NursingAdmission {
+  id          String  @id @default(cuid())
+  admissionId String  @unique
+  data        Json?
+  finalized   Boolean @default(false)
+
+  admission Admission @relation(fields: [admissionId], references: [id])
+}
