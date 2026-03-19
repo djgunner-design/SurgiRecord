@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { useLock } from '@/components/lock-provider'
+import LockIndicator from '@/components/lock-indicator'
 
 interface Medication {
   medication: string
@@ -29,6 +31,7 @@ export default function MedicationsPage() {
   const params = useParams()
   const router = useRouter()
   const admissionId = params.admissionId as string
+  const { isEditable, lockHolder, requestLock, releaseLock, hasLock, lockStatus } = useLock('meds')
   const [medications, setMedications] = useState<Medication[]>([])
   const [selectedProtocol, setSelectedProtocol] = useState('')
 
@@ -49,7 +52,9 @@ export default function MedicationsPage() {
         <h2 className="text-lg font-semibold">MEDICATIONS</h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+      <LockIndicator section="meds" />
+
+      <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 ${!isEditable ? 'pointer-events-none opacity-60' : ''}`}>
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back

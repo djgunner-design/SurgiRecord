@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation'
 import { Plus, Edit, Trash2, Save } from 'lucide-react'
 import { findAdmission, findPatient, findUser, getHandoversForAdmission } from '@/lib/sample-data'
 import TemplatePicker from '@/components/template-picker'
+import { useLock } from '@/components/lock-provider'
+import LockIndicator from '@/components/lock-indicator'
 
 export default function HandoverPage() {
   const params = useParams()
@@ -35,6 +37,8 @@ export default function HandoverPage() {
     setFields(prev => ({ ...prev, [key]: value }))
   }
 
+  const { isEditable, lockHolder, requestLock, releaseLock, hasLock, lockStatus } = useLock('handover')
+
   if (!admission || !patient) return <div>Not found</div>
 
   const surgeon = admission.surgeonId ? findUser(admission.surgeonId) : null
@@ -50,7 +54,9 @@ export default function HandoverPage() {
         <h2 className="text-lg font-semibold">HANDOVER</h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+      <LockIndicator section="handover" />
+
+      <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 ${!isEditable ? 'pointer-events-none opacity-60' : ''}`}>
         {/* Patient Summary */}
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>

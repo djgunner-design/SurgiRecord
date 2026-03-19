@@ -4,10 +4,13 @@ import { useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Save, Plus } from 'lucide-react'
 import TemplatePicker from '@/components/template-picker'
+import { useLock } from '@/components/lock-provider'
+import LockIndicator from '@/components/lock-indicator'
 
 export default function RecoveryPage() {
   const params = useParams()
   const router = useRouter()
+  const { isEditable, lockHolder, requestLock, releaseLock, hasLock, lockStatus } = useLock('recovery')
   const [activeStage, setActiveStage] = useState(1)
 
   const [fields, setFields] = useState<Record<string, string>>({
@@ -52,7 +55,9 @@ export default function RecoveryPage() {
         <h2 className="text-lg font-semibold">RECOVERY</h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+      <LockIndicator section="recovery" />
+
+      <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 ${!isEditable ? 'pointer-events-none opacity-60' : ''}`}>
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back

@@ -7,8 +7,11 @@ import PatientBanner from '@/components/patient-banner'
 import PatientSidebar from '@/components/patient-sidebar'
 import TimerWidget from '@/components/timer-widget'
 import RecentPatients from '@/components/recent-patients'
+import { LockProvider } from '@/components/lock-provider'
+import LockBanner from '@/components/lock-banner'
 import { findAdmission, findPatient, findUser } from '@/lib/sample-data'
 import { addRecentPatient } from '@/lib/store'
+import { releaseAllUserLocks } from '@/lib/locks'
 
 export default function PatientLayout({ children }: { children: React.ReactNode }) {
   const params = useParams()
@@ -23,6 +26,14 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
     if (name) setUserName(decodeURIComponent(name))
 
     setDarkMode(document.documentElement.classList.contains('dark'))
+
+    // Release all locks on page unload
+    const handleUnload = () => {
+      const uid = document.cookie.split('; ').find(c => c.startsWith('userId='))?.split('=')[1] || '1'
+      releaseAllUserLocks(uid)
+    }
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
   }, [])
 
   // Record recent patient visit
@@ -116,17 +127,22 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
         surgeonName={surgeon ? surgeon.name : null}
       />
 
-      {/* Content Area */}
-      <div className="flex flex-1 overflow-hidden">
-        <PatientSidebar
-          admissionId={admissionId}
-          collapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-        />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 dark:bg-slate-900">
-          {children}
-        </main>
-      </div>
+      {/* Lock Banner */}
+      <LockProvider admissionId={admissionId}>
+        <LockBanner />
+
+        {/* Content Area */}
+        <div className="flex flex-1 overflow-hidden">
+          <PatientSidebar
+            admissionId={admissionId}
+            collapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          />
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 dark:bg-slate-900">
+            {children}
+          </main>
+        </div>
+      </LockProvider>
       <TimerWidget />
     </div>
   )

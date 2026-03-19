@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Plus, Settings } from 'lucide-react'
 import { getObservationsForAdmission, findUser } from '@/lib/sample-data'
 import { addObservation, getStoredObservations } from '@/lib/store'
+import { useLock } from '@/components/lock-provider'
+import LockIndicator from '@/components/lock-indicator'
 import {
   LineChart,
   Line,
@@ -24,6 +26,7 @@ export default function ObservationsPage() {
   const [showForm, setShowForm] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const formRef = useRef<HTMLFormElement>(null)
+  const { isEditable, lockHolder, requestLock, releaseLock, hasLock, lockStatus } = useLock('obs')
 
   const getUserId = useCallback(() => {
     return document.cookie.split('; ').find(c => c.startsWith('userId='))?.split('=')[1] || '1'
@@ -110,7 +113,9 @@ export default function ObservationsPage() {
         <h2 className="text-lg font-semibold">OBSERVATIONS</h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+      <LockIndicator section="obs" />
+
+      <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 ${!isEditable ? 'pointer-events-none opacity-60' : ''}`}>
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => router.back()}

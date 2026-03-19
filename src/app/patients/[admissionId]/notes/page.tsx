@@ -6,12 +6,15 @@ import { Plus, Edit, Trash2, Clock } from 'lucide-react'
 import { getNotesForAdmission, findUser } from '@/lib/sample-data'
 import { addNote, getStoredNotes, deleteNote } from '@/lib/store'
 import TemplatePicker from '@/components/template-picker'
+import { useLock } from '@/components/lock-provider'
+import LockIndicator from '@/components/lock-indicator'
 
 export default function NotesPage() {
   const params = useParams()
   const admissionId = params.admissionId as string
   const [newNote, setNewNote] = useState('')
   const [refreshKey, setRefreshKey] = useState(0)
+  const { isEditable, lockHolder, requestLock, releaseLock, hasLock, lockStatus } = useLock('notes')
 
   const getUserId = useCallback(() => {
     return document.cookie.split('; ').find(c => c.startsWith('userId='))?.split('=')[1] || '1'
@@ -71,7 +74,9 @@ export default function NotesPage() {
         <h2 className="text-lg font-semibold">CLINICAL NOTES</h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+      <LockIndicator section="notes" />
+
+      <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 ${!isEditable ? 'pointer-events-none opacity-60' : ''}`}>
         {/* Notes List */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

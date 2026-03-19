@@ -9,7 +9,6 @@ import {
   refreshLock,
   getLocks,
   getSectionLock,
-  isLockedByOther,
   releaseAllUserLocks,
   onLockEvent,
   getLockVersion,
@@ -205,22 +204,17 @@ const HeldLocksContext = createContext<{
 export function useLock(section: string): UseLockResult {
   const ctx = useContext(LockContext)
   const heldCtx = useContext(HeldLocksContext)
-
-  if (!ctx) {
-    // No LockProvider found - return safe defaults (everything editable)
-    return {
-      isEditable: true,
-      lockHolder: null,
-      requestLock: () => {},
-      releaseLock: () => {},
-      hasLock: false,
-      lockStatus: 'unlocked',
-    }
-  }
-
-  const { admissionId, userId, userName, locks, refreshAllLocks } = ctx
-  const { registerHeldLock, unregisterHeldLock } = heldCtx
   const lockRef = useRef<Lock | null>(null)
+  const noopFn = useCallback(() => {}, [])
+
+  const hasCtx = !!ctx
+  const admissionId = ctx?.admissionId ?? ''
+  const userId = ctx?.userId ?? ''
+  const userName = ctx?.userName ?? ''
+  const locks = ctx?.locks ?? []
+  const refreshAllLocksFn = ctx?.refreshAllLocks ?? noopFn
+  const registerHeldLock = heldCtx.registerHeldLock
+  const unregisterHeldLock = heldCtx.unregisterHeldLock
 
   // Derive lock status from current locks list
   const sectionLock = locks.find(l => l.section === section) || null
@@ -244,51 +238,49 @@ export function useLock(section: string): UseLockResult {
 
   // Keep lockRef synced
   useEffect(() => {
+    if (!hasCtx) return
     if (hasLock && sectionLock) {
       lockRef.current = sectionLock
       registerHeldLock(section, sectionLock.id)
     }
-    return () => {
-      // Don't unregister here - only on explicit release or unmount
-    }
-  }, [hasLock, sectionLock, section, registerHeldLock])
+  }, [hasCtx, hasLock, sectionLock, section, registerHeldLock])
 
   // Auto-release on unmount
   useEffect(() => {
+    if (!hasCtx) return
     return () => {
       if (lockRef.current && userId) {
         releaseLock(lockRef.current.id, userId)
         unregisterHeldLock(section)
         lockRef.current = null
-        // Broadcast so other tabs update
         broadcastLockEvent({ type: 'locks_changed' })
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, section])
+  }, [hasCtx, userId, section])
 
   const doRequestLock = useCallback(() => {
-    if (!userId || !userName) return
+    if (!hasCtx || !userId || !userName) return
 
     const result = acquireLock(admissionId, section, userId, userName)
     if (result) {
       lockRef.current = result
       registerHeldLock(section, result.id)
-      refreshAllLocks()
+      refreshAllLocksFn()
     } else {
-      // Lock held by someone else - send access request
       requestAccess(admissionId, section, userName)
     }
-  }, [admissionId, section, userId, userName, refreshAllLocks, registerHeldLock])
+  }, [hasCtx, admissionId, section, userId, userName, refreshAllLocksFn, registerHeldLock])
 
   const doReleaseLock = useCallback(() => {
+    if (!hasCtx) return
     if (lockRef.current && userId) {
       releaseLock(lockRef.current.id, userId)
       unregisterHeldLock(section)
       lockRef.current = null
-      refreshAllLocks()
+      refreshAllLocksFn()
     }
-  }, [userId, section, refreshAllLocks, unregisterHeldLock])
+  }, [hasCtx, userId, section, refreshAllLocksFn, unregisterHeldLock])
 
   return {
     isEditable,

@@ -4,6 +4,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Save } from 'lucide-react'
 import { findAdmission, findPatient, findUser } from '@/lib/sample-data'
 import PdfExportButton from '@/components/pdf-export-button'
+import { useLock } from '@/components/lock-provider'
+import LockIndicator from '@/components/lock-indicator'
 
 export default function OperationReportPage() {
   const params = useParams()
@@ -13,6 +15,7 @@ export default function OperationReportPage() {
   const patient = admission ? findPatient(admission.patientId) : null
   const surgeon = admission?.surgeonId ? findUser(admission.surgeonId) : null
   const anaesthetist = admission?.anaesthetistId ? findUser(admission.anaesthetistId) : null
+  const { isEditable, lockHolder, requestLock, releaseLock, hasLock, lockStatus } = useLock('operation-report')
 
   return (
     <div className="space-y-6">
@@ -20,7 +23,9 @@ export default function OperationReportPage() {
         <h2 className="text-lg font-semibold">OPERATION REPORT</h2>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+      <LockIndicator section="operation-report" />
+
+      <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 ${!isEditable ? 'pointer-events-none opacity-60' : ''}`}>
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => router.back()} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" /> Back
