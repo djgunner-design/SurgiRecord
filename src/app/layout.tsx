@@ -1,11 +1,22 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ClientProviders } from "./client-providers";
 import KeyboardShortcuts from "@/components/keyboard-shortcuts";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#10b981",
+};
+
 export const metadata: Metadata = {
   title: "SurgiRecord - Theatre Management",
   description: "Surgical theatre management system",
+  manifest: "/manifest.json",
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+  },
 };
 
 export default function RootLayout({
